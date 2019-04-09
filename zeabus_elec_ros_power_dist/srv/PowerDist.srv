@@ -1,0 +1,4 @@
+uint8 u_switch_index
+bool is_switch_high
+---
+bool b_result
