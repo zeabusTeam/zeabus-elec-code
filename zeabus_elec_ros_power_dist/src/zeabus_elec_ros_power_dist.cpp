@@ -70,54 +70,56 @@ PowerDistNode::PowerDistNode( const std::string &kx_node_name, const std::string
  */
 int main( int argc, char *argv[] )
 {
-        setvbuf( stdout, NULL, _IONBF, BUFSIZ );
+    setvbuf( stdout, NULL, _IONBF, BUFSIZ );
 
-	/* Initialize ROS functionalities */	
-        rclcpp::init( argc, argv );
+    static const std::string kac_POWER_DISTRIBUTOR_DESCRIPTION = std::string( "PowerDist" );
+    static const std::string kx_POWER_DISTRIBUTOR_NODE_NAME = std::string( "PowerDist" );
+    static const std::string kx_SET_POWER_SWITCH_SERVICE_NAME = std::string( "elec/power_dist/set_power_swtich" );
 
-        static const std::string kac_POWER_DISTRIBUTOR_DESCRIPTION = std::string( "PowerDist" );
-        static const std::string kx_POWER_DISTRIBUTOR_NODE_NAME = std::string( "PowerDist" );
-        static const std::string kx_SET_POWER_SWITCH_SERVICE_NAME = std::string( "elec/power_dist/set_power_swtich" );
+    static std::shared_ptr<PowerDistNode> px_node;
 
-        static std::shared_ptr<PowerDistNode> px_node = std::make_shared<PowerDistNode>( kx_POWER_DISTRIBUTOR_NODE_NAME, kx_SET_POWER_SWITCH_SERVICE_NAME );
+    /* Initialize ROS functionalities */	
+    rclcpp::init( argc, argv );
 
-        // TODO: Retrieve parameter from launch file
+    px_node = std::make_shared<PowerDistNode>( kx_POWER_DISTRIBUTOR_NODE_NAME, kx_SET_POWER_SWITCH_SERVICE_NAME );
 
-	/*=================================================================================
-	  Discover the Power Distributor and also open handles for it.
-	  =================================================================================*/
+    // TODO: Retrieve parameter from launch file
 
-	/* Create the device manager class to implement chip functions */
-        px_node->px_mssp_ = std::make_shared<Zeabus_Elec::ftdi_mpsse_impl>( Zeabus_Elec::FT232H, kac_POWER_DISTRIBUTOR_DESCRIPTION.c_str() );
-	
-        if( px_node->px_mssp_->GetCurrentStatus() != 0U )
-	{
-		/* Fail - unable to initialize Power Distribution module */
-                RCLCPP_FATAL( px_node->get_logger(), "Unable to initialize power_distributor" );
-                // TODO: Proper exception handling
-		return( -1 );       // Let's pretend this return statement is throwing an exception
-	}
-	
-	/* Set GPIO direction and pin intial state to all output, bit=1 means output, 0 means input */
-        px_node->px_mssp_->SetGPIODirection( 0xFFFFU , 0x0000U );       /* All bits are output, initial pin state is low */
-        if( px_node->px_mssp_->GetCurrentStatus() != 0U )
-	{
-		/* Fail - unable to initialize Power Distribution module */
-                RCLCPP_FATAL( px_node->get_logger(), "Unable to setup GPIO direction of power_distributor" );
-                // TODO: Proper exception handling
-		return( -1 );       // Let's pretend this return statement is throwing an exception
-	}
-	
-	/*=================================================================================
-	  Now the FTDI chip is opened and hooked. We can continue ROS registration process 
-	  =================================================================================*/
-	
-	/* Main-loop. Just a spin-lock */
-        rclcpp::spin( px_node );
-	
-	/*=================================================================================
-	  At this point of code. ROS has some fatal errors or just normal shutdown. Also us. 
-	  =================================================================================*/
-        rclcpp::shutdown();
-        return 0;
+    /*=================================================================================
+      Discover the Power Distributor and also open handles for it.
+      =================================================================================*/
+
+    /* Create the device manager class to implement chip functions */
+    px_node->px_mssp_ = std::make_shared<Zeabus_Elec::ftdi_mpsse_impl>( Zeabus_Elec::FT232H, kac_POWER_DISTRIBUTOR_DESCRIPTION.c_str() );
+    
+    if( px_node->px_mssp_->GetCurrentStatus() != 0U )
+    {
+        /* Fail - unable to initialize Power Distribution module */
+        RCLCPP_FATAL( px_node->get_logger(), "Unable to initialize power_distributor" );
+        // TODO: Proper exception handling
+        return( -1 );       // Let's pretend this return statement is throwing an exception
+    }
+    
+    /* Set GPIO direction and pin intial state to all output, bit=1 means output, 0 means input */
+    px_node->px_mssp_->SetGPIODirection( 0xFFFFU , 0x0000U );       /* All bits are output, initial pin state is low */
+    if( px_node->px_mssp_->GetCurrentStatus() != 0U )
+    {
+        /* Fail - unable to initialize Power Distribution module */
+        RCLCPP_FATAL( px_node->get_logger(), "Unable to setup GPIO direction of power_distributor" );
+        // TODO: Proper exception handling
+        return( -1 );       // Let's pretend this return statement is throwing an exception
+    }
+    
+    /*=================================================================================
+      Now the FTDI chip is opened and hooked. We can continue ROS registration process 
+      =================================================================================*/
+    
+    /* Main-loop. Just a spin-lock */
+    rclcpp::spin( px_node );
+    
+    /*=================================================================================
+      At this point of code. ROS has some fatal errors or just normal shutdown. Also us. 
+      =================================================================================*/
+    rclcpp::shutdown();
+    return 0;
 }
