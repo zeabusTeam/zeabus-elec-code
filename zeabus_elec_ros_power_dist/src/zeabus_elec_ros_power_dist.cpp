@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <string>
 #include <memory>
+#include <map>
 
 #include "rclcpp/rclcpp.hpp"
 #include "zeabus_elec_ros_power_dist/srv/power_dist.hpp"
@@ -72,18 +73,53 @@ int main( int argc, char *argv[] )
 {
     setvbuf( stdout, NULL, _IONBF, BUFSIZ );
 
-    static const std::string kac_POWER_DISTRIBUTOR_DESCRIPTION = std::string( "PowerDist" );
-    static const std::string kx_POWER_DISTRIBUTOR_NODE_NAME = std::string( "PowerDist" );
-    static const std::string kx_SET_POWER_SWITCH_SERVICE_NAME = std::string( "elec/power_dist/set_power_swtich" );
+    static const std::string kac_POWER_DISTRIBUTOR_DESCRIPTION( "PowerDist" );
+    static const std::string kx_POWER_DISTRIBUTOR_NODE_NAME( "PowerDist" );
+    static const std::string kx_SET_POWER_SWITCH_SERVICE_NAME( "elec/power_dist/set_power_swtich" );
+    static const std::string kx_PARAMETER_IO_DIRECTION_NAME( "ul_io_direction" );
+    static const std::string kx_PARAMETER_IO_STATE_NAME( "ul_io_state" );
+    static const std::map<const std::string, const uint16_t> kx_DEFAULT_PARAMETER_LIST { { kx_PARAMETER_IO_DIRECTION_NAME, 0xFFFFU }, { kx_PARAMETER_IO_STATE_NAME, 0x0000U } };    /* bit=1 means output, 0 means input,
+                                                                                                                                                                                        All bits are output, initial pin state is low */
 
     static std::shared_ptr<PowerDistNode> px_node;
+    static std::map<const std::string, const uint16_t> x_parameter_list;
 
     /* Initialize ROS functionalities */	
     rclcpp::init( argc, argv );
 
     px_node = std::make_shared<PowerDistNode>( kx_POWER_DISTRIBUTOR_NODE_NAME, kx_SET_POWER_SWITCH_SERVICE_NAME );
 
-    // TODO: Retrieve parameter from launch file
+    /* Get parameters from launch file */
+
+    std::shared_ptr<rclcpp::SyncParametersClient> px_parameters_client = std::make_shared<rclcpp::SyncParametersClient>( px_node );
+
+    while( !px_parameters_client->wait_for_service( std::chrono::seconds( 1 ) ) )
+    {
+        if( !rclcpp::ok() )
+        {
+            RCLCPP_FATAL( px_node->get_logger(), "Interrupted while waiting for the service");
+            // TODO: Proper exception handling
+            return( -1 );       // Let's pretend this return statement is throwing an exception
+        }
+    }
+
+    for( auto x_default_parameter : kx_DEFAULT_PARAMETER_LIST )
+    {
+        const std::string x_parameter_name = x_default_parameter.first;
+        uint16_t us_parameter;
+
+        if( px_parameters_client->has_parameter( x_parameter_name ) )
+        {
+            auto x_parameter = px_parameters_client->get_parameters( { x_parameter_name } );
+
+            us_parameter = static_cast<uint16_t>( x_parameter.front().as_int() );
+        }
+        else
+        {
+            us_parameter = kx_DEFAULT_PARAMETER_LIST.at( x_parameter_name );
+        }
+        x_parameter_list.insert( { { x_parameter_name, us_parameter } } );
+    }
 
     /*=================================================================================
       Discover the Power Distributor and also open handles for it.
@@ -100,8 +136,8 @@ int main( int argc, char *argv[] )
         return( -1 );       // Let's pretend this return statement is throwing an exception
     }
     
-    /* Set GPIO direction and pin intial state to all output, bit=1 means output, 0 means input */
-    px_node->px_mssp_->SetGPIODirection( 0xFFFFU , 0x0000U );       /* All bits are output, initial pin state is low */
+    /* Set GPIO direction and pin intial state to all output */
+    px_node->px_mssp_->SetGPIODirection( x_parameter_list[ kx_PARAMETER_IO_DIRECTION_NAME ] , x_parameter_list[ kx_PARAMETER_IO_STATE_NAME ] );
     if( px_node->px_mssp_->GetCurrentStatus() != 0U )
     {
         /* Fail - unable to initialize Power Distribution module */
