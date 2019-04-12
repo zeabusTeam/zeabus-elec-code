@@ -5,6 +5,7 @@
 #include <map>
 
 #include "rclcpp/rclcpp.hpp"
+#include "zeabus_elec_ros_internal_interface/srv/power_dist_set_power_switch.hpp"
 #include "zeabus_elec_ros_power_dist/srv/power_dist.hpp"
 
 #include "ftdi_impl.h"

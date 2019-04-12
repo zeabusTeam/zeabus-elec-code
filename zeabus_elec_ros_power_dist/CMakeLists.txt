@@ -19,6 +19,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(zeabus_elec_ros_internal_interface REQUIRED)
 
 set(srv_files
   srv/PowerDist.srv
@@ -37,6 +38,7 @@ add_executable(main
 )
 ament_target_dependencies(main
   rclcpp
+  zeabus_elec_ros_internal_interface
 )
 target_link_libraries(main
   ftdi1
