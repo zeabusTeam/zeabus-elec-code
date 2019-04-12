@@ -76,21 +76,20 @@ int main( int argc, char *argv[] )
     static const std::string kx_POWER_DISTRIBUTOR_DESCRIPTION( "PowerDist" );
     static const std::string kx_POWER_DISTRIBUTOR_NODE_NAME( "PowerDist" );
     static const std::string kx_SET_POWER_SWITCH_SERVICE_NAME( "elec/power_dist/set_power_swtich" );
-    static const std::string kx_PARAMETER_IO_DIRECTION_NAME( "ul_io_direction" );
-    static const std::string kx_PARAMETER_IO_STATE_NAME( "ul_io_state" );
-    static const std::map<const std::string, const uint16_t> kx_DEFAULT_PARAMETER_LIST { { kx_PARAMETER_IO_DIRECTION_NAME, 0xFFFFU }, { kx_PARAMETER_IO_STATE_NAME, 0x0000U } };    /* bit=1 means output, 0 means input,
-                                                                                                                                                                                        All bits are output, initial pin state is low */
+    static const std::string kx_IO_DIRECTION_PARAMETER_NAME( "ul_io_direction" );
+    static const std::string kx_IO_STATE_PARAMETER_NAME( "ul_io_state" );
+    static const std::map<const std::string, const uint16_t> kx_DEFAULT_PARAMETER_LIST { { kx_IO_DIRECTION_PARAMETER_NAME, 0xFFFFU }, { kx_IO_STATE_PARAMETER_NAME, 0x0000U } };    
+    /* bit=1 means output, 0 means input,
+        All bits are output, initial pin state is low */
 
-    static std::shared_ptr<PowerDistNode> px_node;
     static std::map<const std::string, const uint16_t> x_parameter_list;
 
     /* Initialize ROS functionalities */	
     rclcpp::init( argc, argv );
 
-    px_node = std::make_shared<PowerDistNode>( kx_POWER_DISTRIBUTOR_NODE_NAME, kx_SET_POWER_SWITCH_SERVICE_NAME );
+    static std::shared_ptr<PowerDistNode> px_node = std::make_shared<PowerDistNode>( kx_POWER_DISTRIBUTOR_NODE_NAME, kx_SET_POWER_SWITCH_SERVICE_NAME );
 
     /* Get parameters from launch file */
-
     std::shared_ptr<rclcpp::SyncParametersClient> px_parameters_client = std::make_shared<rclcpp::SyncParametersClient>( px_node );
 
     while( !px_parameters_client->wait_for_service( std::chrono::seconds( 1 ) ) )
@@ -137,7 +136,7 @@ int main( int argc, char *argv[] )
     }
     
     /* Set GPIO direction and pin intial state to all output */
-    px_node->px_mssp_->SetGPIODirection( x_parameter_list[ kx_PARAMETER_IO_DIRECTION_NAME ] , x_parameter_list[ kx_PARAMETER_IO_STATE_NAME ] );
+    px_node->px_mssp_->SetGPIODirection( x_parameter_list[ kx_IO_DIRECTION_PARAMETER_NAME ] , x_parameter_list[ kx_IO_STATE_PARAMETER_NAME ] );
     if( px_node->px_mssp_->GetCurrentStatus() != 0U )
     {
         /* Fail - unable to initialize Power Distribution module */
