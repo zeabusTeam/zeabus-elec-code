@@ -17,20 +17,8 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(zeabus_elec_ros_internal_interface REQUIRED)
-
-set(srv_files
-  srv/PowerDist.srv
-)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  ${srv_files}
-)
-
-ament_export_dependencies(rosidl_default_runtime)
-
 
 add_executable(main
   src/zeabus_elec_ros_power_dist.cpp
@@ -50,16 +38,6 @@ target_include_directories(main
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../zeabus_elec_ftdi_lib>
     /usr/include/libftdi1
 )
-
-get_default_rmw_implementation(rmw_implementation)
-find_package("${rmw_implementation}" REQUIRED)
-get_rmw_typesupport(typesupport_impls "${rmw_implementation}" LANGUAGE "cpp")
-
-foreach(typesupport_impl ${typesupport_impls})
-  rosidl_target_interfaces(main
-    ${PROJECT_NAME} ${typesupport_impl}
-  )
-endforeach()
 
 install(TARGETS main
   DESTINATION lib/${PROJECT_NAME}

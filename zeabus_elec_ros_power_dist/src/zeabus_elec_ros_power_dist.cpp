@@ -6,12 +6,11 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "zeabus_elec_ros_internal_interface/srv/power_dist_set_power_switch.hpp"
-#include "zeabus_elec_ros_power_dist/srv/power_dist.hpp"
 
 #include "ftdi_impl.h"
 
 /* ===================================================
- * ROS node defination
+ * ROS node definition
  * ===================================================
  */
 namespace
@@ -24,14 +23,14 @@ namespace
             std::shared_ptr<Zeabus_Elec::ftdi_mpsse_impl> px_mssp_;
 
         private:
-            rclcpp::Service<zeabus_elec_ros_power_dist::srv::PowerDist>::SharedPtr px_srv_;
+            rclcpp::Service<zeabus_elec_ros_internal_interface::srv::PowerDistSetPowerSwitch>::SharedPtr px_srv_;
     };
 }
 
 PowerDistNode::PowerDistNode( const std::string &kx_node_name, const std::string &kx_service_name ) : rclcpp::Node( kx_node_name )
 {
-    auto v_handle_elec_power_dist = [this]( const std::shared_ptr<zeabus_elec_ros_power_dist::srv::PowerDist::Request> kx_req,
-                                            std::shared_ptr<zeabus_elec_ros_power_dist::srv::PowerDist::Response> x_res ) -> void
+    auto v_handle_elec_power_dist = [this]( const std::shared_ptr<zeabus_elec_ros_internal_interface::srv::PowerDistSetPowerSwitch::Request> kx_req,
+                                            std::shared_ptr<zeabus_elec_ros_internal_interface::srv::PowerDistSetPowerSwitch::Response> x_res ) -> void
     {
         int ft_state;
         uint8_t u_switch_state, u_current_switch_state, u_switch_mask;
@@ -61,7 +60,7 @@ PowerDistNode::PowerDistNode( const std::string &kx_node_name, const std::string
     };
 
     /* Register ROS service server to Elec/Power_switch topic */
-    this->px_srv_ = this->create_service<zeabus_elec_ros_power_dist::srv::PowerDist> ( kx_service_name, v_handle_elec_power_dist );
+    this->px_srv_ = this->create_service<zeabus_elec_ros_internal_interface::srv::PowerDistSetPowerSwitch> ( kx_service_name, v_handle_elec_power_dist );
     
     return;
 }
@@ -74,7 +73,7 @@ int main( int argc, char *argv[] )
 {
     setvbuf( stdout, NULL, _IONBF, BUFSIZ );
 
-    static const std::string kac_POWER_DISTRIBUTOR_DESCRIPTION( "PowerDist" );
+    static const std::string kx_POWER_DISTRIBUTOR_DESCRIPTION( "PowerDist" );
     static const std::string kx_POWER_DISTRIBUTOR_NODE_NAME( "PowerDist" );
     static const std::string kx_SET_POWER_SWITCH_SERVICE_NAME( "elec/power_dist/set_power_swtich" );
     static const std::string kx_PARAMETER_IO_DIRECTION_NAME( "ul_io_direction" );
@@ -127,7 +126,7 @@ int main( int argc, char *argv[] )
       =================================================================================*/
 
     /* Create the device manager class to implement chip functions */
-    px_node->px_mssp_ = std::make_shared<Zeabus_Elec::ftdi_mpsse_impl>( Zeabus_Elec::FT232H, kac_POWER_DISTRIBUTOR_DESCRIPTION.c_str() );
+    px_node->px_mssp_ = std::make_shared<Zeabus_Elec::ftdi_mpsse_impl>( Zeabus_Elec::FT232H, kx_POWER_DISTRIBUTOR_DESCRIPTION.c_str() );
     
     if( px_node->px_mssp_->GetCurrentStatus() != 0U )
     {
