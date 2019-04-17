@@ -83,6 +83,7 @@ int main( int argc, char *argv[] )
         All bits are output, initial pin state is low */
 
     static std::map<const std::string, const uint16_t> x_parameter_list;
+    static int32_t main_status = 0;
 
     /* Initialize ROS functionalities */	
     rclcpp::init( argc, argv );
@@ -92,69 +93,90 @@ int main( int argc, char *argv[] )
     /* Get parameters from launch file */
     std::shared_ptr<rclcpp::SyncParametersClient> px_parameters_client = std::make_shared<rclcpp::SyncParametersClient>( px_node );
 
-    while( !px_parameters_client->wait_for_service( std::chrono::seconds( 1 ) ) )
+    try
     {
-        if( !rclcpp::ok() )
+        while( !px_parameters_client->wait_for_service( std::chrono::seconds( 1 ) ) )
         {
-            RCLCPP_FATAL( px_node->get_logger(), "Interrupted while waiting for the service");
-            // TODO: Proper exception handling
-            return( -1 );       // Let's pretend this return statement is throwing an exception
+            if( !rclcpp::ok() )
+            {
+                /* Fail -  Interrupted while waiting for the service */
+                throw( -1 );
+            }
         }
-    }
 
-    for( auto x_default_parameter : kx_DEFAULT_PARAMETER_LIST )
-    {
-        const std::string x_parameter_name = x_default_parameter.first;
-        uint16_t us_parameter;
-
-        if( px_parameters_client->has_parameter( x_parameter_name ) )
+        for( auto x_default_parameter : kx_DEFAULT_PARAMETER_LIST )
         {
-            auto x_parameter = px_parameters_client->get_parameters( { x_parameter_name } );
+            const std::string x_parameter_name = x_default_parameter.first;
+            uint16_t us_parameter;
 
-            us_parameter = static_cast<uint16_t>( x_parameter.front().as_int() );
+            if( px_parameters_client->has_parameter( x_parameter_name ) )
+            {
+                auto x_parameter = px_parameters_client->get_parameters( { x_parameter_name } );
+
+                us_parameter = static_cast<uint16_t>( x_parameter.front().as_int() );
+            }
+            else
+            {
+                us_parameter = kx_DEFAULT_PARAMETER_LIST.at( x_parameter_name );
+            }
+            x_parameter_list.insert( { { x_parameter_name, us_parameter } } );
         }
-        else
+
+        /*=================================================================================
+          Discover the Power Distributor and also open handles for it.
+          =================================================================================*/
+
+        /* Create the device manager class to implement chip functions */
+        px_node->px_mssp_ = std::make_shared<Zeabus_Elec::ftdi_mpsse_impl>( Zeabus_Elec::FT232H, kx_POWER_DISTRIBUTOR_DESCRIPTION.c_str() );
+        
+        if( px_node->px_mssp_->GetCurrentStatus() != 0U )
         {
-            us_parameter = kx_DEFAULT_PARAMETER_LIST.at( x_parameter_name );
+            /* Fail - unable to initialize Power Distribution module */
+            throw( -2 );
         }
-        x_parameter_list.insert( { { x_parameter_name, us_parameter } } );
+        
+        /* Set GPIO direction and pin intial state to all output */
+        px_node->px_mssp_->SetGPIODirection( x_parameter_list[ kx_IO_DIRECTION_PARAMETER_NAME ] , x_parameter_list[ kx_IO_STATE_PARAMETER_NAME ] );
+        if( px_node->px_mssp_->GetCurrentStatus() != 0U )
+        {
+            /* Fail - unable to setup GPIO direction of power_distributor */
+            throw( -3 );
+        }
+        
+        /*=================================================================================
+          Now the FTDI chip is opened and hooked. We can continue ROS registration process 
+          =================================================================================*/
+        
+        /* Main-loop. Just a spin-lock */
+        rclcpp::spin( px_node );
+    }
+    catch( const int32_t &l_error )
+    {
+        main_status = l_error;
+
+        switch( l_error )
+        {
+            case -1:
+                RCLCPP_FATAL( px_node->get_logger(), "Interrupted while waiting for the service" );
+                break;
+            case -2:
+                /* Fail - unable to initialize Power Distribution module */
+                RCLCPP_FATAL( px_node->get_logger(), "Unable to initialize power_distributor" );
+                break;
+            case -3:
+                /* Fail - unable to setup GPIO direction of power_distributor */
+                RCLCPP_FATAL( px_node->get_logger(), "Unable to setup GPIO direction of power_distributor" );
+                break;
+            default:
+                RCLCPP_FATAL( px_node->get_logger(), "Unknown error" );
+        }
+
+        RCLCPP_FATAL( px_node->get_logger(), "Error code: %d", l_error );
     }
 
-    /*=================================================================================
-      Discover the Power Distributor and also open handles for it.
-      =================================================================================*/
-
-    /* Create the device manager class to implement chip functions */
-    px_node->px_mssp_ = std::make_shared<Zeabus_Elec::ftdi_mpsse_impl>( Zeabus_Elec::FT232H, kx_POWER_DISTRIBUTOR_DESCRIPTION.c_str() );
-    
-    if( px_node->px_mssp_->GetCurrentStatus() != 0U )
-    {
-        /* Fail - unable to initialize Power Distribution module */
-        RCLCPP_FATAL( px_node->get_logger(), "Unable to initialize power_distributor" );
-        // TODO: Proper exception handling
-        return( -1 );       // Let's pretend this return statement is throwing an exception
-    }
-    
-    /* Set GPIO direction and pin intial state to all output */
-    px_node->px_mssp_->SetGPIODirection( x_parameter_list[ kx_IO_DIRECTION_PARAMETER_NAME ] , x_parameter_list[ kx_IO_STATE_PARAMETER_NAME ] );
-    if( px_node->px_mssp_->GetCurrentStatus() != 0U )
-    {
-        /* Fail - unable to initialize Power Distribution module */
-        RCLCPP_FATAL( px_node->get_logger(), "Unable to setup GPIO direction of power_distributor" );
-        // TODO: Proper exception handling
-        return( -1 );       // Let's pretend this return statement is throwing an exception
-    }
-    
-    /*=================================================================================
-      Now the FTDI chip is opened and hooked. We can continue ROS registration process 
-      =================================================================================*/
-    
-    /* Main-loop. Just a spin-lock */
-    rclcpp::spin( px_node );
-    
     /*=================================================================================
       At this point of code. ROS has some fatal errors or just normal shutdown. Also us. 
       =================================================================================*/
     rclcpp::shutdown();
-    return 0;
+    return main_status;
 }
