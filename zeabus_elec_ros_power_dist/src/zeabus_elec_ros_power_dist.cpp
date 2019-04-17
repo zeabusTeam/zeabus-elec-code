@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <exception>
 
 #include "rclcpp/rclcpp.hpp"
 #include "zeabus_elec_ros_internal_interface/srv/power_dist_set_power_switch.hpp"
@@ -90,11 +91,23 @@ int main( int argc, char *argv[] )
 
     static std::shared_ptr<PowerDistNode> px_node = std::make_shared<PowerDistNode>( kx_POWER_DISTRIBUTOR_NODE_NAME, kx_SET_POWER_SWITCH_SERVICE_NAME );
 
-    /* Get parameters from launch file */
-    std::shared_ptr<rclcpp::SyncParametersClient> px_parameters_client = std::make_shared<rclcpp::SyncParametersClient>( px_node );
-
     try
     {
+        if( px_node == NULL )
+        {
+            /* Fail - Unable to create PowerDistNode object */
+            throw( std::bad_alloc() );
+        }
+
+        /* Get parameters from launch file */
+        std::shared_ptr<rclcpp::SyncParametersClient> px_parameters_client = std::make_shared<rclcpp::SyncParametersClient>( px_node );
+
+        if( px_parameters_client == NULL )
+        {
+            /* Fail - Unable to create ROS's parameter client object */
+            throw( std::bad_alloc() );
+        }
+
         while( !px_parameters_client->wait_for_service( std::chrono::seconds( 1 ) ) )
         {
             if( !rclcpp::ok() )
@@ -172,6 +185,12 @@ int main( int argc, char *argv[] )
         }
 
         RCLCPP_FATAL( px_node->get_logger(), "Error code: %d", l_error );
+    }
+    catch( const std::bad_alloc &x_error )
+    {
+        main_status = -10;
+
+        RCLCPP_FATAL( px_node->get_logger(), "Bad allocation" );
     }
 
     /*=================================================================================
