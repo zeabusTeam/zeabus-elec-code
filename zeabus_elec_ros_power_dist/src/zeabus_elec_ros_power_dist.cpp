@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <string>
+#include <sstream>
 #include <memory>
 #include <map>
 #include <exception>
@@ -188,9 +189,11 @@ int main( int argc, char *argv[] )
     }
     catch( const std::bad_alloc &x_error )
     {
+        std::stringstream x_ss;
+
         main_status = -10;
 
-        RCLCPP_FATAL( px_node->get_logger(), "Bad allocation" );
+        x_ss << "Bad allocation";
     }
 
     /*=================================================================================
