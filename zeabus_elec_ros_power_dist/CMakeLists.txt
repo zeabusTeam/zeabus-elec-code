@@ -1,8 +1,12 @@
+ #LIBRARIES zeabus_elec_ros_peripheral_bridg2
 cmake_minimum_required(VERSION 2.8.3)
 project(zeabus_elec_ros_power_dist)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11 -Wall -Wextra)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FTDI REQUIRED libftdi1)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -100,7 +104,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS ../zeabus_elec_ftdi_lib
+ INCLUDE_DIRS ${FTDI_INCLUDE_DIRS} ../zeabus_elec_ftdi_lib
  LIBRARIES zeabus_elec_ros_power_dist
  CATKIN_DEPENDS roscpp std_msgs message_runtime
 #  DEPENDS ../zeabus_elec_ftdi_lib/libftd2xx.a
@@ -115,6 +119,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${FTDI_INCLUDE_DIRS}
   ../zeabus_elec_ftdi_lib
 )
 
