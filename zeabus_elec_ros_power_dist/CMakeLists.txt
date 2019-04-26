@@ -4,6 +4,9 @@ project(zeabus_elec_ros_power_dist)
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11 -Wall -Wextra)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FTDI REQUIRED libftdi1)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -100,8 +103,8 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS ../zeabus_elec_ftdi_lib
- LIBRARIES zeabus_elec_ros_power_dist
+ #INCLUDE_DIRS ${FTDI_INCLUDE_DIRS} ../zeabus_elec_ftdi_lib
+ #LIBRARIES zeabus_elec_ros_power_dist
  CATKIN_DEPENDS roscpp std_msgs message_runtime
 #  DEPENDS ../zeabus_elec_ftdi_lib/libftd2xx.a
 )
@@ -115,6 +118,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${FTDI_INCLUDE_DIRS}
   ../zeabus_elec_ftdi_lib
 )
 
@@ -132,7 +136,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}
-	src/zeabus_elec_ros_power_dist.cpp
+  src/zeabus_elec_ros_power_dist.cpp
   ../zeabus_elec_ftdi_lib/ftdi_impl.cpp
 )
 
@@ -152,7 +156,7 @@ add_dependencies( ${PROJECT_NAME}
 ## Specify libraries to link a library or executable target against
 target_link_libraries( ${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  ${PROJECT_SOURCE_DIR}/../zeabus_elec_ftdi_lib/libftdi.a
+  ftdi1
   pthread
   udev
 )
