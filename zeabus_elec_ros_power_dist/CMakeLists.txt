@@ -1,4 +1,3 @@
- #LIBRARIES zeabus_elec_ros_peripheral_bridg2
 cmake_minimum_required(VERSION 2.8.3)
 project(zeabus_elec_ros_power_dist)
 
@@ -104,8 +103,8 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS ${FTDI_INCLUDE_DIRS} ../zeabus_elec_ftdi_lib
- LIBRARIES zeabus_elec_ros_power_dist
+ #INCLUDE_DIRS ${FTDI_INCLUDE_DIRS} ../zeabus_elec_ftdi_lib
+ #LIBRARIES zeabus_elec_ros_power_dist
  CATKIN_DEPENDS roscpp std_msgs message_runtime
 #  DEPENDS ../zeabus_elec_ftdi_lib/libftd2xx.a
 )
@@ -137,7 +136,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}
-	src/zeabus_elec_ros_power_dist.cpp
+  src/zeabus_elec_ros_power_dist.cpp
   ../zeabus_elec_ftdi_lib/ftdi_impl.cpp
 )
 

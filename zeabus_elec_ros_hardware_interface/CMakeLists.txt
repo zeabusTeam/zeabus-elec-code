@@ -20,7 +20,11 @@ generate_messages(DEPENDENCIES
 )
 
 catkin_package(
-  CATKIN_DEPENDS roscpp message_runtime nav_msgs std_msgs zeabus_elec_ros_peripheral_bridge
+  CATKIN_DEPENDS
+  roscpp message_runtime 
+  nav_msgs 
+  std_msgs 
+  zeabus_elec_ros_peripheral_bridge
 )
 include_directories(
   ${catkin_INCLUDE_DIRS}
