@@ -175,6 +175,7 @@ bool ZeabusElec_GetPressure( uint16_t& barometerVal)
 
         zeabus_elec_ros_peripheral_bridge::barometer barometerMsg;
         barometerMsg.pressureValue = barometerVal;
+        barometerMsg.header.stamp = ros::Time::now();
 
         barometerPublisher.publish( barometerMsg );
 

@@ -35,16 +35,19 @@ static ros::ServiceClient solenoid_service_client;
 
 static double atm_pressure, depth_offset;
 
-static double depth;
+static zeabus_elec_ros_hardware_interface::GetDepthCommand::Response depth_state;
 
 void barometer_value_to_depth(const zeabus_elec_ros_peripheral_bridge::barometer::ConstPtr& msg)
 {
-    double barometer_voltage, psi;
+    double barometer_voltage, psi, depth;
 
     barometer_voltage = (msg->pressureValue) * (5.0 / 1023.0);
     psi = (barometer_voltage - 0.5) * (30.0 / 4.0);
 
     depth = ((psi - atm_pressure) * PSI_PER_DEPTH) + depth_offset;
+
+    depth_state.depth = depth;
+    depth_state.header = msg->header;
 
     ROS_INFO("pressure sensor analog value : %.4d", msg->pressureValue);
     ROS_INFO("pressure sensor voltage : %.4lf V", barometer_voltage);
@@ -67,7 +70,7 @@ void send_planner_switch(const zeabus_elec_ros_peripheral_bridge::ios_state::Con
 bool get_depth(zeabus_elec_ros_hardware_interface::GetDepthCommand::Request &req,
                     zeabus_elec_ros_hardware_interface::GetDepthCommand::Response &res)
 {
-    res.depth = depth;
+    res = depth_state;
 
     return true;
 }
