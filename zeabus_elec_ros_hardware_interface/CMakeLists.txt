@@ -4,9 +4,9 @@ project(zeabus_elec_ros_hardware_interface)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   message_generation
-  nav_msgs
   std_msgs
   zeabus_elec_ros_peripheral_bridge
+  zeabus_utility
 )
 
 add_service_files(FILES
@@ -16,16 +16,15 @@ add_service_files(FILES
 )
 
 generate_messages(DEPENDENCIES
-    nav_msgs
     std_msgs
 )
 
 catkin_package(
   CATKIN_DEPENDS
   roscpp message_runtime 
-  nav_msgs 
   std_msgs 
   zeabus_elec_ros_peripheral_bridge
+  zeabus_utility
 )
 include_directories(
   ${catkin_INCLUDE_DIRS}
