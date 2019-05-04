@@ -8,9 +8,9 @@
 
 #include <string>
 
+#include <zeabus_utility/DepthCommand.h>
 #include <zeabus_elec_ros_hardware_interface/PowerSwitchCommand.h>
 #include <zeabus_elec_ros_hardware_interface/IOCommand.h>
-#include <zeabus_elec_ros_hardware_interface/DepthCommand.h>
 #include <zeabus_elec_ros_power_dist/power_dist.h>
 #include <zeabus_elec_ros_peripheral_bridge/barometer.h>
 #include <zeabus_elec_ros_peripheral_bridge/ios_state.h>
@@ -35,7 +35,7 @@ static ros::ServiceClient solenoid_service_client;
 
 static double atm_pressure, depth_offset;
 
-static zeabus_elec_ros_hardware_interface::DepthCommand::Response depth_state;
+static zeabus_utility::DepthCommand::Response depth_state;
 
 void barometer_value_to_depth(const zeabus_elec_ros_peripheral_bridge::barometer::ConstPtr& msg)
 {
@@ -67,8 +67,8 @@ void send_planner_switch(const zeabus_elec_ros_peripheral_bridge::ios_state::Con
     planner_switch_publisher.publish(planner_switch_msg);
 }
 
-bool get_depth(zeabus_elec_ros_hardware_interface::DepthCommand::Request &req,
-                    zeabus_elec_ros_hardware_interface::DepthCommand::Response &res)
+bool get_depth(zeabus_utility::DepthCommand::Request &req,
+                    zeabus_utility::DepthCommand::Response &res)
 {
     res = depth_state;
 

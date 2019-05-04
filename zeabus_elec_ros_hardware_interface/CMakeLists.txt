@@ -6,12 +6,12 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
   zeabus_elec_ros_peripheral_bridge
+  zeabus_utility
 )
 
 add_service_files(FILES
     IOCommand.srv
     PowerSwitchCommand.srv
-    DepthCommand.srv
 )
 
 generate_messages(DEPENDENCIES
@@ -23,6 +23,7 @@ catkin_package(
   roscpp message_runtime 
   std_msgs 
   zeabus_elec_ros_peripheral_bridge
+  zeabus_utility
 )
 include_directories(
   ${catkin_INCLUDE_DIRS}
