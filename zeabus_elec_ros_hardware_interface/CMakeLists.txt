@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(FILES
     IOCommand.srv
     PowerSwitchCommand.srv
-    GetDepthCommand.srv
+    DepthCommand.srv
 )
 
 generate_messages(DEPENDENCIES
