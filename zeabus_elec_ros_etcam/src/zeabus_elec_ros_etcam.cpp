@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <algorithm>
 
 #include "boost/array.hpp"
 #include "ros/ros.h"
@@ -28,7 +27,7 @@ static bool set_thruster_throttle( zeabus_elec_ros_etcam::CommandSetThrusterThro
     std::array< uint16_t, libetcam::ku_THRUSTER_NUMBER > kau_thruster_throttle;
 
     kau_BOOST_THRUSTER_THROTTLE = kx_REQUEST.aus_thruster_throttle;
-    std::copy( kau_BOOST_THRUSTER_THROTTLE.begin(), kau_BOOST_THRUSTER_THROTTLE.end(), kau_thruster_throttle.begin() );
+    std::memcpy( kau_thruster_throttle.begin(), kau_BOOST_THRUSTER_THROTTLE.begin(), libetcam::ku_THRUSTER_NUMBER );
 
     std::array< uint8_t, libetcam::ku_THROTTLE_PACKET_SIZE > kau_PACKET_THRUSTER_THROTTLE = libetcam::au_throttle_pack( kau_thruster_throttle );
 
@@ -88,5 +87,5 @@ int main( int argc, char **argv )
         ROS_FATAL( " Error code: %d", kl_ERROR );
     }
 
-    return 0;
+    return l_main_status;
 }
