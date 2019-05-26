@@ -11,6 +11,10 @@ add_service_files(FILES
     CommandSetThrusterThrottle.srv
 )
 
+add_message_files(FILES
+    Telemetry.msg
+)
+
 generate_messages()
 
 catkin_package(
