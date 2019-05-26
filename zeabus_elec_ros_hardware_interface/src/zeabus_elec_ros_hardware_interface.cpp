@@ -6,15 +6,21 @@
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
 
+#include <boost/array.hpp>
+
 #include <string>
 
 #include <zeabus_utility/DepthCommand.h>
+#include <zeabus_utility/SendThrottle.h>
 #include <zeabus_elec_ros_hardware_interface/PowerSwitchCommand.h>
 #include <zeabus_elec_ros_hardware_interface/IOCommand.h>
 #include <zeabus_elec_ros_power_dist/power_dist.h>
 #include <zeabus_elec_ros_peripheral_bridge/barometer.h>
 #include <zeabus_elec_ros_peripheral_bridge/ios_state.h>
 #include <zeabus_elec_ros_peripheral_bridge/solenoid_sw.h>
+#include <zeabus_elec_ros_etcam/CommandSetThrusterThrottle.h>
+
+#include <libetcam.hpp>
 
 #define ONE_ATM_AS_PSI 14.6959
 #define PSI_PER_DEPTH 0.6859
@@ -28,10 +34,12 @@ static ros::ServiceServer set_power_switch_on_service_server;
 static ros::ServiceServer set_power_switch_off_service_server;
 static ros::ServiceServer set_solenoid_on_service_server;
 static ros::ServiceServer set_solenoid_off_service_server;
+static ros::ServiceServer set_thruster_throttle_service_server;
 static ros::ServiceServer get_depth_service_server;
 
 static ros::ServiceClient power_dist_service_client;
 static ros::ServiceClient solenoid_service_client;
+static ros::ServiceClient thruster_throttle_service_client;
 
 static double atm_pressure, depth_offset;
 
@@ -143,6 +151,33 @@ bool set_solenoid_off(zeabus_elec_ros_hardware_interface::IOCommand::Request &re
     return res.result;
 }
 
+bool set_thruster_throttle(zeabus_utility::SendThrottle::Request &req,
+                        zeabus_utility::SendThrottle::Response &res)
+{
+    zeabus_elec_ros_etcam::CommandSetThrusterThrottle set_thruster_throttle_service;
+    bool result = false;
+
+    boost::array<int16_t, libetcam::ku_THRUSTER_NUMBER> thruster_throttle = req.data;
+
+    for(uint8_t i = 0U; i < libetcam::ku_THRUSTER_NUMBER; i++)
+    {
+        if(thruster_throttle[i] < 0)
+        {
+            thruster_throttle[i] = (thruster_throttle[i] * (-1)) + 47U;
+        }
+        else if(thruster_throttle[i] > 0)
+        {
+            thruster_throttle[i] += 1047U;
+        }
+    }
+
+    set_thruster_throttle_service.request.aus_thruster_throttle = thruster_throttle;
+
+    result = thruster_throttle_service_client.call(set_thruster_throttle_service);
+
+    return result;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "Zeabus_Elec_Hardware_interface");
@@ -160,10 +195,12 @@ int main(int argc, char **argv)
     set_power_switch_off_service_server = nh.advertiseService("/power_distribution/switch_off", set_power_switch_off);
     set_solenoid_on_service_server = nh.advertiseService("/io_and_pressure/IO_ON", set_solenoid_on);
     set_solenoid_off_service_server = nh.advertiseService("/io_and_pressure/IO_OFF", set_solenoid_off);
+    set_thruster_throttle_service_server = nh.advertiseService("/hardware/thruster_throttle", set_thruster_throttle);
     get_depth_service_server = nh.advertiseService("/sensors/pressure", get_depth);
 
     power_dist_service_client = nh.serviceClient<zeabus_elec_ros_power_dist::power_dist>("power_switch");
     solenoid_service_client = nh.serviceClient<zeabus_elec_ros_peripheral_bridge::solenoid_sw>("solenoid_sw");
+    thruster_throttle_service_client = nh.serviceClient<zeabus_elec_ros_etcam::CommandSetThrusterThrottle>("/etcam/set_thruster_throttle");
 
     ros::spin();
 

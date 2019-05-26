@@ -27,8 +27,9 @@ catkin_package(
 )
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ../libetcam/include
 )
 
-add_executable(zeabus_elec_ros_hardware_interface src/zeabus_elec_ros_hardware_interface.cpp)
+add_executable(zeabus_elec_ros_hardware_interface src/zeabus_elec_ros_hardware_interface.cpp ../libetcam/src/libetcam.cpp)
 add_dependencies(zeabus_elec_ros_hardware_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(zeabus_elec_ros_hardware_interface ${catkin_LIBRARIES})
