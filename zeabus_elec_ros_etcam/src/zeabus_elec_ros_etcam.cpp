@@ -53,9 +53,9 @@ static void v_get_telemetry( void )
 {
     libetcam::TelemetrySync x_telemetry_sync;
     std::vector< uint8_t > x_sync( 1U, 0U );
-    std::vector< uint8_t > x_thruster_state( libetcam::ku_THRUSTER_STATE_SIZE, 0U );
+    std::vector< uint8_t > x_telemetry( libetcam::ku_TELEMETRY_SIZE, 0U );
     zeabus_elec_ros_etcam::Telemetry x_telemetry_message;
-    boost::array< uint8_t, libetcam::ku_THRUSTER_STATE_SIZE > au_boost_thruster_state;
+    boost::array< uint8_t, libetcam::ku_TELEMETRY_SIZE > au_boost_telemetry;
 
     do
     {
@@ -66,14 +66,14 @@ static void v_get_telemetry( void )
     }
     while( x_telemetry_sync.b_telemetry_sync( x_sync.front() ) == false );
 
-    if( px_dev_etcam->read_data( &x_thruster_state, libetcam::ku_THRUSTER_STATE_SIZE ) != libetcam::ku_THRUSTER_STATE_SIZE )
+    if( px_dev_etcam->read_data( &x_telemetry, libetcam::ku_TELEMETRY_SIZE ) != libetcam::ku_TELEMETRY_SIZE )
     {
         throw( kl_UNABLE_TO_RECEIVE_TELEMETRY );
     }
 
-    std::copy( x_thruster_state.begin(), x_thruster_state.end(), au_boost_thruster_state.begin() );
+    std::copy( x_telemetry.begin(), x_telemetry.end(), au_boost_telemetry.begin() );
 
-    x_telemetry_message.au_thruster_state = au_boost_thruster_state;
+    x_telemetry_message.au_telemetry = au_boost_telemetry;
 
     x_publisher_telemetry.publish( x_telemetry_message );
 

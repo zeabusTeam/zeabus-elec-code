@@ -19,6 +19,7 @@
 #include <zeabus_elec_ros_peripheral_bridge/ios_state.h>
 #include <zeabus_elec_ros_peripheral_bridge/solenoid_sw.h>
 #include <zeabus_elec_ros_etcam/CommandSetThrusterThrottle.h>
+#include <zeabus_elec_ros_etcam/Telemetry.h>
 
 #include <libetcam.hpp>
 
