@@ -103,8 +103,8 @@ int main( int argc, char **argv )
         px_dev_etcam->set_option_port( boost::asio::serial_port_base::parity( boost::asio::serial_port_base::parity::none ) );
         px_dev_etcam->set_option_port( boost::asio::serial_port_base::stop_bits( boost::asio::serial_port_base::stop_bits::one ) );
 
-        x_service_server_set_thruster_throttle = x_node_handle.advertiseService( "/etcam/set_thruster_throttle", b_set_thruster_throttle );
-        x_publisher_telemetry = x_node_handle.advertise< zeabus_elec_ros_etcam::Telemetry >( "/etcam/telemetry", 100U );
+        x_service_server_set_thruster_throttle = x_node_handle.advertiseService( "set_thruster_throttle", b_set_thruster_throttle );
+        x_publisher_telemetry = x_node_handle.advertise< zeabus_elec_ros_etcam::Telemetry >( "telemetry", 100U );
 
         while( ros::ok() )
         {
