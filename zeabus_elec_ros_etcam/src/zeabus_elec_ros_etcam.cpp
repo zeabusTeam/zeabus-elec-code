@@ -74,10 +74,9 @@ static void v_get_telemetry( void )
     std::copy( x_telemetry.begin(), x_telemetry.end(), au_boost_telemetry.begin() );
 
     x_telemetry_message.au_telemetry = au_boost_telemetry;
+    x_telemetry_message.header.stamp = ros::Time::now();
 
     x_publisher_telemetry.publish( x_telemetry_message );
-
-    return;
 }
 
 int main( int argc, char **argv )
