@@ -30,6 +30,7 @@ static ros::Publisher planner_switch_publisher;
 
 static ros::Subscriber barometer_subsciber;
 static ros::Subscriber ios_state_subsciber;
+static ros::Subscriber telemetry_subsciber;
 
 static ros::ServiceServer set_power_switch_on_service_server;
 static ros::ServiceServer set_power_switch_off_service_server;
@@ -74,6 +75,24 @@ void send_planner_switch(const zeabus_elec_ros_peripheral_bridge::ios_state::Con
     planner_switch_msg.data = planner_switch_state;
 
     planner_switch_publisher.publish(planner_switch_msg);
+}
+
+void telemetry_parser(const zeabus_elec_ros_etcam::Telemetry::ConstPtr& msg)
+{
+    boost::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> boost_telemetry;
+    std::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> telemetry;
+    std::array<libetcam::TelemetryStruct, libetcam::ku_THRUSTER_NUMBER> parsed_telemetry;
+    
+    boost_telemetry = msg->au_telemetry;
+    std::memcpy( telemetry.begin(), boost_telemetry.begin(), libetcam::ku_TELEMETRY_SIZE );
+
+    parsed_telemetry = libetcam::ax_telemetry_parser( telemetry );
+
+    ROS_INFO("%d", parsed_telemetry[0].u_temperature);
+    ROS_INFO("%.2f", parsed_telemetry[0].f_voltage);
+    ROS_INFO("%.2f", parsed_telemetry[0].f_current);
+    ROS_INFO("%d", parsed_telemetry[0].us_power_consumtion);
+    ROS_INFO("%d", parsed_telemetry[0].us_erpm);
 }
 
 bool get_depth(zeabus_utility::DepthCommand::Request &req,
@@ -191,6 +210,7 @@ int main(int argc, char **argv)
 
     barometer_subsciber = nh.subscribe("barometer", 10, barometer_value_to_depth);
     ios_state_subsciber = nh.subscribe("ios_state", 10, send_planner_switch);
+    telemetry_subsciber = nh.subscribe("/etcam/telemetry", 10, telemetry_parser);
 
     set_power_switch_on_service_server = nh.advertiseService("/power_distribution/switch_on", set_power_switch_on);
     set_power_switch_off_service_server = nh.advertiseService("/power_distribution/switch_off", set_power_switch_off);
