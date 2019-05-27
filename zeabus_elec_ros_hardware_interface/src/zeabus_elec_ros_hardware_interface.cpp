@@ -12,6 +12,7 @@
 
 #include <zeabus_utility/DepthCommand.h>
 #include <zeabus_utility/SendThrottle.h>
+#include <zeabus_utility/Telemetry.h>
 #include <zeabus_elec_ros_hardware_interface/PowerSwitchCommand.h>
 #include <zeabus_elec_ros_hardware_interface/IOCommand.h>
 #include <zeabus_elec_ros_power_dist/power_dist.h>
@@ -38,6 +39,7 @@ static ros::ServiceServer set_solenoid_on_service_server;
 static ros::ServiceServer set_solenoid_off_service_server;
 static ros::ServiceServer set_thruster_throttle_service_server;
 static ros::ServiceServer get_depth_service_server;
+static ros::ServiceServer get_telemetry_service_server;
 
 static ros::ServiceClient power_dist_service_client;
 static ros::ServiceClient solenoid_service_client;
@@ -46,6 +48,7 @@ static ros::ServiceClient thruster_throttle_service_client;
 static double atm_pressure, depth_offset;
 
 static zeabus_utility::DepthCommand::Response depth_state;
+static zeabus_utility::Telemetry::Response telemetry_state;
 
 void barometer_value_to_depth(const zeabus_elec_ros_peripheral_bridge::barometer::ConstPtr& msg)
 {
@@ -82,23 +85,38 @@ void telemetry_parser(const zeabus_elec_ros_etcam::Telemetry::ConstPtr& msg)
     boost::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> boost_telemetry;
     std::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> telemetry;
     std::array<libetcam::TelemetryStruct, libetcam::ku_THRUSTER_NUMBER> parsed_telemetry;
+    boost::array<zeabus_utility::TelemetryStruct, libetcam::ku_THRUSTER_NUMBER> boost_parsed_telemetry;
     
     boost_telemetry = msg->au_telemetry;
-    std::memcpy( telemetry.begin(), boost_telemetry.begin(), libetcam::ku_TELEMETRY_SIZE );
+    std::memcpy(telemetry.begin(), boost_telemetry.begin(), libetcam::ku_TELEMETRY_SIZE);
 
-    parsed_telemetry = libetcam::ax_telemetry_parser( telemetry );
+    parsed_telemetry = libetcam::ax_telemetry_parser(telemetry);
 
-    ROS_INFO("%d", parsed_telemetry[0].u_temperature);
-    ROS_INFO("%.2f", parsed_telemetry[0].f_voltage);
-    ROS_INFO("%.2f", parsed_telemetry[0].f_current);
-    ROS_INFO("%d", parsed_telemetry[0].us_power_consumtion);
-    ROS_INFO("%d", parsed_telemetry[0].us_erpm);
+    for(uint8_t i = 0U; i < libetcam::ku_THRUSTER_NUMBER; i++)
+    {
+        boost_parsed_telemetry[i].temperature = parsed_telemetry[i].u_temperature;
+        boost_parsed_telemetry[i].voltage = parsed_telemetry[i].f_voltage;
+        boost_parsed_telemetry[i].current = parsed_telemetry[i].f_current;
+        boost_parsed_telemetry[i].power_consumption = parsed_telemetry[i].us_power_consumption;
+        boost_parsed_telemetry[i].erpm = parsed_telemetry[i].us_erpm;
+    }
+    
+    telemetry_state.telemetry = boost_parsed_telemetry;
+    telemetry_state.header = msg->header;
 }
 
 bool get_depth(zeabus_utility::DepthCommand::Request &req,
                     zeabus_utility::DepthCommand::Response &res)
 {
     res = depth_state;
+
+    return true;
+}
+
+bool get_telemetry(zeabus_utility::Telemetry::Request &req,
+                    zeabus_utility::Telemetry::Response &res)
+{
+    res = telemetry_state;
 
     return true;
 }
@@ -218,6 +236,7 @@ int main(int argc, char **argv)
     set_solenoid_off_service_server = nh.advertiseService("/io_and_pressure/IO_OFF", set_solenoid_off);
     set_thruster_throttle_service_server = nh.advertiseService("/hardware/thruster_throttle", set_thruster_throttle);
     get_depth_service_server = nh.advertiseService("/sensors/pressure", get_depth);
+    get_telemetry_service_server = nh.advertiseService("/sensors/telemetry", get_telemetry);
 
     power_dist_service_client = nh.serviceClient<zeabus_elec_ros_power_dist::power_dist>("power_switch");
     solenoid_service_client = nh.serviceClient<zeabus_elec_ros_peripheral_bridge::solenoid_sw>("solenoid_sw");
