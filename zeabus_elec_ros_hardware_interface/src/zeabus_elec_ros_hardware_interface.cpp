@@ -229,7 +229,7 @@ int main(int argc, char **argv)
     set_solenoid_off_service_server = nh.advertiseService("/io_and_pressure/IO_OFF", set_solenoid_off);
     fire_torpedo_server = nh.advertiseService("/fire_torpedo", fire_torpedo);
     hold_torpedo_server = nh.advertiseService("/hold_torpedo", hold_torpedo);
-    get_depth_service_server = nh.advertiseService("/sensors/pressure", get_depth);
+    get_depth_service_server = nh.advertiseService("/sensor/pressure", get_depth);
 
     power_dist_service_client = nh.serviceClient<zeabus_elec_ros_power_dist::power_dist>("power_switch");
     solenoid_service_client = nh.serviceClient<zeabus_elec_ros_peripheral_bridge::solenoid_sw>("solenoid_sw");
