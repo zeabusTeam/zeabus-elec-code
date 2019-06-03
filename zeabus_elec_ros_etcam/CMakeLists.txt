@@ -32,9 +32,12 @@ include_directories(
     ../libetcam/include
 )
 
+link_directories(
+    ../libetcam
+)
+
 add_executable(zeabus_elec_ros_etcam 
     src/zeabus_elec_ros_etcam.cpp 
-    ../libetcam/src/libetcam.cpp
 )
 add_dependencies(zeabus_elec_ros_etcam
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -43,4 +46,5 @@ add_dependencies(zeabus_elec_ros_etcam
 target_link_libraries(zeabus_elec_ros_etcam
     ${catkin_LIBRARIES}
     ${zeabus_library_cpp_LIBRARIES}
+    etcam
 )
