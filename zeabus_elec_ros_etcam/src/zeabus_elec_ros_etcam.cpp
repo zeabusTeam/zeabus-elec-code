@@ -35,7 +35,7 @@ static bool b_set_thruster_throttle( zeabus_elec_ros_etcam::CommandSetThrusterTh
     std::array< uint16_t, libetcam::ku_THRUSTER_NUMBER > au_thruster_throttle;
 
     au_boost_thruster_throttle = x_request.aus_thruster_throttle;
-    std::memcpy( au_thruster_throttle.begin(), au_boost_thruster_throttle.begin(), libetcam::ku_THRUSTER_NUMBER );
+    std::copy( au_boost_thruster_throttle.begin(), au_boost_thruster_throttle.end(), au_thruster_throttle.begin() );
 
     std::array< uint8_t, libetcam::ku_THROTTLE_PACKET_SIZE > au_packet_thruster_throttle = libetcam::au_throttle_pack( au_thruster_throttle );
 

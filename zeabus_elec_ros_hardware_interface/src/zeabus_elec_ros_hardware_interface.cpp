@@ -9,6 +9,7 @@
 #include <boost/array.hpp>
 
 #include <string>
+#include <algorithm>
 
 #include <zeabus_utility/DepthCommand.h>
 #include <zeabus_utility/SendThrottle.h>
@@ -88,7 +89,7 @@ void telemetry_parser(const zeabus_elec_ros_etcam::Telemetry::ConstPtr& msg)
     boost::array<zeabus_utility::TelemetryStruct, libetcam::ku_THRUSTER_NUMBER> boost_parsed_telemetry;
     
     boost_telemetry = msg->au_telemetry;
-    std::memcpy(telemetry.begin(), boost_telemetry.begin(), libetcam::ku_TELEMETRY_SIZE);
+    std::copy(boost_telemetry.begin(), boost_telemetry.end(), telemetry.begin());
 
     parsed_telemetry = libetcam::ax_telemetry_parser(telemetry);
 
