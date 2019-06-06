@@ -294,8 +294,8 @@ int main(int argc, char **argv)
 
     planner_switch_publisher = nh.advertise<std_msgs::Bool>("/planner_switch", 100);
 
-    barometer_subsciber = nh.subscribe("barometer", 10, barometer_value_to_depth);
-    ios_state_subsciber = nh.subscribe("ios_state", 10, send_planner_switch);
+    barometer_subsciber = nh.subscribe("barometer", 100, barometer_value_to_depth);
+    ios_state_subsciber = nh.subscribe("ios_state", 100, send_planner_switch);
     telemetry_subsciber = nh.subscribe("telemetry", 100, telemetry_parser);
 
     set_power_switch_on_service_server = nh.advertiseService("/power_distribution/switch_on", set_power_switch_on);
