@@ -7,6 +7,8 @@
 
     <include file="$(find zeabus_elec_ros_peripheral_bridge)/launch/peripheral_bridge.launch"/>
 
+    <include file="$(find zeabus_elec_ros_etcam)/launch/etcam.launch"/>
+
     <node name="Zeabus_Elec_Hardware_interface" pkg="zeabus_elec_ros_hardware_interface" type="zeabus_elec_ros_hardware_interface">
 
         <param name="atm_pressure" value="$(arg atm_pressure_arg)"/>
