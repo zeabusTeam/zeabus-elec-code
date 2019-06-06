@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 
     power_dist_service_client = nh.serviceClient<zeabus_elec_ros_power_dist::power_dist>("power_switch");
     solenoid_service_client = nh.serviceClient<zeabus_elec_ros_peripheral_bridge::solenoid_sw>("solenoid_sw");
-    thruster_throttle_service_client = nh.serviceClient<zeabus_elec_ros_etcam::CommandSetThrusterThrottle>("/etcam/set_thruster_throttle");
+    thruster_throttle_service_client = nh.serviceClient<zeabus_elec_ros_etcam::CommandSetThrusterThrottle>("/zeabus/elec/set_thruster_throttle");
 
     ros::spin();
 
