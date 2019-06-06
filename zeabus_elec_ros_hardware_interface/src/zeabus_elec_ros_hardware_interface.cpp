@@ -236,7 +236,7 @@ int main(int argc, char **argv)
     set_solenoid_on_service_server = nh.advertiseService("/io_and_pressure/IO_ON", set_solenoid_on);
     set_solenoid_off_service_server = nh.advertiseService("/io_and_pressure/IO_OFF", set_solenoid_off);
     set_thruster_throttle_service_server = nh.advertiseService("/hardware/thruster_throttle", set_thruster_throttle);
-    get_depth_service_server = nh.advertiseService("/sensors/pressure", get_depth);
+    get_depth_service_server = nh.advertiseService("/sensor/pressure", get_depth);
     get_telemetry_service_server = nh.advertiseService("/hardware/thruster_feedback", get_telemetry);
 
     power_dist_service_client = nh.serviceClient<zeabus_elec_ros_power_dist::power_dist>("power_switch");
