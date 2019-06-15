@@ -16,24 +16,24 @@
 #include "ftdi_impl.h"
 #include "logger.hpp"
 
-extern void v_log_node_status(  const ros::Publisher &x_publisher, 
-                                const std::string &x_description_assigned );
+extern void v_log_node_status(  const ros::Publisher &kx_publisher, 
+                                const std::string &kx_description_assigned );
 
-extern void v_log_hardware_error(   const ros::Publisher &x_publisher,
-                                    const int64_t &l_error_code_assigned, 
-                                    const int64_t &l_hardware_status_code_assigned, 
-                                    const std::string &x_description_assigned );
+extern void v_log_hardware_error(   const ros::Publisher &kx_publisher,
+                                    const int64_t &kl_error_code_assigned, 
+                                    const int64_t &kl_hardware_status_code_assigned, 
+                                    const std::string &kx_description_assigned );
 
-extern void v_log_hardware_error_fatal( const ros::Publisher &x_publisher, 
-                                        const int64_t &l_error_code_assigned, 
-                                        const int64_t &l_hardware_status_code_assigned, 
-                                        const std::string &x_description_assigned );
+extern void v_log_hardware_error_fatal( const ros::Publisher &kx_publisher, 
+                                        const int64_t &kl_error_code_assigned, 
+                                        const int64_t &kl_hardware_status_code_assigned, 
+                                        const std::string &kx_description_assigned );
 
-extern void v_log_action(   const ros::Publisher &x_publisher, 
-                            const int64_t &l_action_assigned, 
-                            const int64_t &l_value1_assigned, 
-                            const int64_t &l_value2_assigned, 
-                            const std::string &x_description_assigned );
+extern void v_log_action(   const ros::Publisher &kx_publisher, 
+                            const int64_t &kl_action_assigned, 
+                            const int64_t &kl_value1_assigned, 
+                            const int64_t &kl_value2_assigned, 
+                            const std::string &kx_description_assigned );
 
 static const std::string kx_POWER_DISTRIBUTOR_DESCRIPTION = "PowerDist";
 
@@ -51,7 +51,7 @@ static ros::ServiceServer x_service_server_power_switch;
 static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_request,
                                 zeabus_elec_ros::ServicePowerSwitch::Response &x_response )
 {
-    bool b_result = true;
+    bool b_return = true;
     int i_status_power_dist;
     uint8_t u_switch_state, u_swtich_state_current, u_switch_mask;
     std::string x_description;
@@ -93,7 +93,7 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_
     if( i_status_power_dist != 0U )
     {
         // unable to set GPIO pin state of power distributor
-        b_result = false;
+        b_return = false;
 
         // print and publish unable to set GPIO pin state of power distributor log
         v_log_hardware_error(   x_publisher_hardware_error_message,
@@ -116,7 +116,7 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_
                     ( int64_t )x_request.is_switch_high,
                     x_description );
 
-    return b_result;
+    return b_return;
 }
 
 int main( int argc, char **argv )
@@ -177,15 +177,15 @@ int main( int argc, char **argv )
         // look for callbacks forever
         ros::spin();
     }
-    catch( const int &ki_ERROR )
+    catch( const int &ki_error )
     {
         // catch the fatal error
         std::string x_description;
 
-        i_main_status = ki_ERROR;
+        i_main_status = ki_error;
 
         // prepare the log description message
-        switch( ki_ERROR )
+        switch( ki_error )
         {
             case ki_ERROR_UNABLE_TO_OPEN_POWER_DISTRIBUTOR:
                 x_description = std::string( "Unable to init power distributor" );
@@ -199,7 +199,7 @@ int main( int argc, char **argv )
 
         // print and publish the log
         v_log_hardware_error_fatal( x_publisher_hardware_error_message,
-                                    ( int64_t )ki_ERROR,
+                                    ( int64_t )ki_error,
                                     ( int64_t )px_power_dist->GetCurrentStatus(),
                                     x_description );
     }
