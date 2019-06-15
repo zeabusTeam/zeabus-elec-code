@@ -1,0 +1,7 @@
+#ifndef ACTION_CODE_HPP
+#define ACTION_CODE_HPP
+
+const int ki_ACTION_SET_POWER_SWITCH_CALLED =     150U;
+const int ki_ACTION_SET_POWER_SWTICH_COMPLETE =   151U;
+
+#endif

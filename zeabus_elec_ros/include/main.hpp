@@ -8,5 +8,6 @@
 
 #include "ros/ros.h"
 #include "error_code.hpp"
+#include "action_code.hpp"
 
 #endif

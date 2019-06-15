@@ -35,9 +35,6 @@ extern void v_log_action(   const ros::Publisher &x_publisher,
                             const int64_t &l_value2_assigned, 
                             const std::string &x_description_assigned );
 
-static const int ki_ACTION_SET_SWTICH_CALLED =      15U;
-static const int ki_ACTION_SET_SWTICH_COMPLETE =    16U;
-
 static const std::string kx_POWER_DISTRIBUTOR_DESCRIPTION = "PowerDist";
 
 static const uint16_t kus_INITIAL_IO_DIRECTION =    0xFFFFU;
@@ -51,8 +48,8 @@ static ros::Publisher x_publisher_action_message;
 
 static ros::ServiceServer x_service_server_power_switch;
 
-static bool b_set_swtich(   zeabus_elec_ros::ServicePowerSwitch::Request &x_request,
-                            zeabus_elec_ros::ServicePowerSwitch::Response &x_response )
+static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_request,
+                                zeabus_elec_ros::ServicePowerSwitch::Response &x_response )
 {
     bool b_result = true;
     int i_status_power_dist;
@@ -68,7 +65,7 @@ static bool b_set_swtich(   zeabus_elec_ros::ServicePowerSwitch::Request &x_requ
     
     // print and publish service requests was received log
     v_log_action(   x_publisher_action_message,
-                    ( int64_t )ki_ACTION_SET_SWTICH_CALLED,
+                    ( int64_t )ki_ACTION_SET_POWER_SWITCH_CALLED,
                     ( int64_t )x_request.u_switch_index,
                     ( int64_t )x_request.is_switch_high,
                     x_description );
@@ -114,7 +111,7 @@ static bool b_set_swtich(   zeabus_elec_ros::ServicePowerSwitch::Request &x_requ
 
     // print and publish service requests was servede log
     v_log_action(   x_publisher_action_message,
-                    ( int64_t )ki_ACTION_SET_SWTICH_COMPLETE,
+                    ( int64_t )ki_ACTION_SET_POWER_SWTICH_COMPLETE,
                     ( int64_t )x_request.u_switch_index,
                     ( int64_t )x_request.is_switch_high,
                     x_description );
@@ -175,7 +172,7 @@ int main( int argc, char **argv )
         }
 
         // register service server to ROS
-        x_service_server_power_switch = x_node_handle.advertiseService( "power_switch", b_set_swtich );
+        x_service_server_power_switch = x_node_handle.advertiseService( "power_switch", b_set_power_swtich );
 
         // look for callbacks forever
         ros::spin();
