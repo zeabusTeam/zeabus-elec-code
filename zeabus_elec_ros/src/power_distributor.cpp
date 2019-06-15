@@ -35,11 +35,6 @@ extern void v_log_action(   const ros::Publisher &x_publisher,
                             const int64_t &l_value2_assigned, 
                             const std::string &x_description_assigned );
 
-static const int ki_ERROR_NONE =                    0U;
-static const int ki_ERROR_UNABLE_TO_OPEN_DEVICE =   1U;
-static const int ki_ERROR_UNABLE_TO_INIT_GPIO =     2U;
-static const int ki_ERROR_UNABLE_TO_SET_GPIO =      10U;
-
 static const int ki_ACTION_SET_SWTICH_CALLED =      15U;
 static const int ki_ACTION_SET_SWTICH_COMPLETE =    16U;
 
@@ -71,7 +66,7 @@ static bool b_set_swtich(   zeabus_elec_ros::ServicePowerSwitch::Request &x_requ
     x_description += std::to_string( x_request.is_switch_high );
     x_description += std::string( " was received" );
     
-    // print and publish, service requests was received, the log
+    // print and publish service requests was received log
     v_log_action(   x_publisher_action_message,
                     ( int64_t )ki_ACTION_SET_SWTICH_CALLED,
                     ( int64_t )x_request.u_switch_index,
@@ -103,21 +98,21 @@ static bool b_set_swtich(   zeabus_elec_ros::ServicePowerSwitch::Request &x_requ
         // unable to set GPIO pin state of power distributor
         b_result = false;
 
-        // print and publish, unable to set GPIO pin state of power distributor , the log
+        // print and publish unable to set GPIO pin state of power distributor log
         v_log_hardware_error(   x_publisher_hardware_error_message,
-                                ( int64_t )ki_ERROR_UNABLE_TO_SET_GPIO,
+                                ( int64_t )ki_ERROR_UNABLE_TO_SET_POWER_DISTRIBUTOR_GPIO,
                                 ( int64_t )i_status_power_dist,
                                 std::string( "Unable to set GPIO pin state of power distributor" ) );
     }
 
-    // prepare, service requests was served, the log
+    // prepare service requests was served log
     x_description = std::string( "Set switch service requests, swtich index " );
     x_description += std::to_string( x_request.u_switch_index );
     x_description += std::string( " switch state " );
     x_description += std::to_string( x_request.is_switch_high );
     x_description += std::string( " was served" );
 
-    // print and publish, service requests was servede, the log
+    // print and publish service requests was servede log
     v_log_action(   x_publisher_action_message,
                     ( int64_t )ki_ACTION_SET_SWTICH_COMPLETE,
                     ( int64_t )x_request.u_switch_index,
@@ -168,7 +163,7 @@ int main( int argc, char **argv )
         if( px_power_dist->GetCurrentStatus() != 0U )
         {
             // unable to init power distributor
-            throw( ki_ERROR_UNABLE_TO_OPEN_DEVICE );
+            throw( ki_ERROR_UNABLE_TO_OPEN_POWER_DISTRIBUTOR );
         }
         
         // set initialize GPIO direction and GPIO pin state to all output
@@ -176,7 +171,7 @@ int main( int argc, char **argv )
         if( px_power_dist->GetCurrentStatus() != 0U )
         {
             // unable to initialize GPIO direction and GPIO pin state of power distributor
-            throw( ki_ERROR_UNABLE_TO_INIT_GPIO );
+            throw( ki_ERROR_UNABLE_TO_INIT_POWER_DISTRIBUTOR_GPIO );
         }
 
         // register service server to ROS
@@ -195,10 +190,10 @@ int main( int argc, char **argv )
         // prepare the log description message
         switch( ki_ERROR )
         {
-            case ki_ERROR_UNABLE_TO_OPEN_DEVICE:
+            case ki_ERROR_UNABLE_TO_OPEN_POWER_DISTRIBUTOR:
                 x_description = std::string( "Unable to init power distributor" );
                 break;
-            case ki_ERROR_UNABLE_TO_INIT_GPIO:
+            case ki_ERROR_UNABLE_TO_INIT_POWER_DISTRIBUTOR_GPIO:
                 x_description = std::string( "Unable to initialize GPIO direction and GPIO pin state of power distributor" );
                 break;
             default:

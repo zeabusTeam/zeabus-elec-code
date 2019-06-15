@@ -7,5 +7,6 @@
 #define MAIN_HPP
 
 #include "ros/ros.h"
+#include "error_code.hpp"
 
 #endif
