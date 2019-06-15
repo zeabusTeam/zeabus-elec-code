@@ -7,8 +7,8 @@ add_compile_options(-std=c++14 -Wall -Wextra)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
     roscpp
-    std_msgs
     message_generation
+    std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -20,7 +20,9 @@ pkg_check_modules(FTDI REQUIRED
 ## Generate messages in the 'msg' folder
 add_message_files(
     FILES
+    MessageNodeStatus.msg
     MessageHardwareError.msg
+    MessageAction.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -62,6 +64,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${FTDI_INCLUDE_DIRS}
+  include
   ../zeabus_elec_ftdi_lib
 )
 
@@ -70,6 +73,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable( power_distributor
   src/power_distributor.cpp
+  src/logger.cpp
   ../zeabus_elec_ftdi_lib/ftdi_impl.cpp
 )
 
