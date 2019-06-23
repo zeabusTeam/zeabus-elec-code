@@ -77,6 +77,12 @@ add_executable( power_distributor
   ../zeabus_elec_ftdi_lib/ftdi_impl.cpp
 )
 
+add_executable( peripheral_bridge
+  src/peripheral_bridge.cpp
+  src/logger.cpp
+  ../zeabus_elec_ftdi_lib/ftdi_impl.cpp
+)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies( power_distributor
@@ -84,8 +90,18 @@ add_dependencies( power_distributor
   ${catkin_EXPORTED_TARGETS}
 )
 
+add_dependencies( peripheral_bridge
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries( power_distributor
+  ${catkin_LIBRARIES}
+  ftdi1
+)
+
+target_link_libraries( peripheral_bridge
   ${catkin_LIBRARIES}
   ftdi1
 )

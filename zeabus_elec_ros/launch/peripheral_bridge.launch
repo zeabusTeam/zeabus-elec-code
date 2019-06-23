@@ -1,0 +1,16 @@
+<launch>
+    
+    <arg name="atm_pressure_arg" default="14.6959"/>
+    <arg name="depth_offset_arg" default="0"/>
+
+    <node pkg="zeabus_elec_ros" type="peripheral_bridge" name="zeabus_elec_peripheral_bridge" respawn="true">
+        <param name="i_initial_io_direection_a" value="65535"/>
+        <param name="i_initial_io_pin_state_a" value="0"/>
+        <param name="i_initial_io_direction_b" value="65535"/>
+        <param name="i_initial_io_pin_state_b" value="0"/>
+
+        <param name="lf_atm_pressure" value="$(arg atm_pressure_arg)"/>
+        <param name="lf_depth_offset" value="$(arg depth_offset_arg)"/>
+    </node>
+
+</launch>
