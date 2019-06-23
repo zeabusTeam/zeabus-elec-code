@@ -20,6 +20,9 @@ static const std::string kx_POWER_DISTRIBUTOR_DESCRIPTION = "PowerDist";
 static const uint16_t kus_INITIAL_IO_DIRECTION =            0xFFFFU;
 static const uint16_t kus_INITIAL_IO_PIN_STATE =            0x0000U;
 
+static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_request,
+                                zeabus_elec_ros::ServicePowerSwitch::Response &x_response )
+
 static std::shared_ptr<Zeabus_Elec::ftdi_mpsse_impl> px_power_distributor;
 
 static ros::Publisher x_publisher_node_status_log;

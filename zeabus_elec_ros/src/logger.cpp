@@ -24,6 +24,8 @@ void v_log_node_status( const ros::Publisher &kx_publisher,
 
     // print the message to ROS console
     ROS_INFO( kx_description_assigned.c_str() );
+
+    return;
 }
 
 void v_log_hardware_error(  const ros::Publisher &kx_publisher,
@@ -46,6 +48,8 @@ void v_log_hardware_error(  const ros::Publisher &kx_publisher,
 
     // print the message to ROS console
     ROS_ERROR( kx_description_assigned.c_str() );
+
+    return;
 }
 
 void v_log_hardware_error_fatal(    const ros::Publisher &kx_publisher, 
@@ -68,6 +72,8 @@ void v_log_hardware_error_fatal(    const ros::Publisher &kx_publisher,
 
     // print the message to ROS console
     ROS_FATAL( kx_description_assigned.c_str() );
+
+    return;
 }
 
 void v_log_action(  const ros::Publisher &kx_publisher, 
@@ -92,4 +98,6 @@ void v_log_action(  const ros::Publisher &kx_publisher,
 
     // print the message to ROS console
     ROS_INFO( kx_description_assigned.c_str() );
+
+    return;
 }
