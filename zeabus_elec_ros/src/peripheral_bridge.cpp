@@ -14,6 +14,7 @@
 #include "zeabus_elec_ros/MessageNodeStatus.h"
 #include "zeabus_elec_ros/MessageHardwareError.h"
 #include "zeabus_elec_ros/MessageAction.h"
+#include "zeabus_elec_ros/ServiceIOPinState.h"
 #include "ftdi_impl.h"
 #include "logger.hpp"
 
@@ -22,8 +23,10 @@ static const double klf_ONE_ATM_AS_PSI =                    14.6959;
 static const double klf_PSI_PER_DEPTH =                     0.6859;
 
 static void v_get_barometer_value( void );
-static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_reqeust,
+static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_request,
                                     zeabus_utility::ServiceDepth::Response &x_response );
+static bool b_set_io_pin_state( zeabus_elec_ros::ServiceIOPinState::Request &x_request,
+                                zeabus_elec_ros::ServiceIOPinState::Response &x_response );
 static double lf_barometer_value_to_depth( const uint16_t &us_barometer_value );
 
 static std::shared_ptr<Zeabus_Elec::ftdi_impl> px_peripheral_bridge_a, px_peripheral_bridge_b;
@@ -33,6 +36,7 @@ static ros::Publisher x_publisher_hardware_error_log;
 static ros::Publisher x_publisher_action_log;
 
 static ros::ServiceServer x_service_server_get_depth;
+static ros::ServiceServer x_service_server_set_io_pin_state;
 
 static zeabus_utility::ServiceDepth::Response x_depth_state;
 static double lf_atm_pressure, lf_depth_offset;
@@ -63,6 +67,7 @@ static void v_get_barometer_value( void )
 
     if( px_peripheral_bridge_a->GetCurrentStatus() != 0U || i_completed_byte != 11U )
     {
+        // unable to request barometer value from peripheral bridge
         throw( ki_ERROR_UNABLE_TO_REQURST_BAROMETER_VALUE );
     }
 
@@ -72,6 +77,7 @@ static void v_get_barometer_value( void )
     i_completed_byte = px_peripheral_bridge_a->Receive( x_buffer );
     if( px_peripheral_bridge_a->GetCurrentStatus() != 0U || i_completed_byte != 2U )
     {
+        // unable to receive barometer value from peripheral bridge
         throw( ki_ERROR_UNABLE_TO_RECEIVE_BAROMETER_VALUE );
     }
 
@@ -115,7 +121,7 @@ static void v_get_barometer_value( void )
     return;
 }
 
-static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_reqeust,
+static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_request,
                                     zeabus_utility::ServiceDepth::Response &x_response )
 {
     std::string x_description;
@@ -160,6 +166,135 @@ static double lf_barometer_value_to_depth( const uint16_t &us_barometer_value )
     lf_depth = ( ( lf_psi - lf_atm_pressure ) * klf_PSI_PER_DEPTH ) + lf_depth_offset;
     
     return lf_depth;
+}
+
+static bool b_set_io_pin_state( zeabus_elec_ros::ServiceIOPinState::Request &x_request,
+                                zeabus_elec_ros::ServiceIOPinState::Response &x_response )
+{
+    uint8_t u_io_pin_state_nibble, u_io_pin_state, u_io_pin_state_current, u_io_pin_state_mask;
+    int i_state_peripheral_bridge;
+    bool b_return;
+    std::string x_description;
+
+    b_return = true;
+
+    //preparing the log description
+    x_description = std::string( "Set IO pin state service requests, IO pin index " );
+    x_description += std::to_string( x_request.u_io_pin_index );
+    x_description += std::string( " IO pin state " );
+    x_description += std::to_string( x_request.is_io_pin_state_high );
+    x_description += std::string( " was received" );
+
+    // print and publish the log
+    v_log_action(   x_publisher_action_log,
+                    ( int64_t )ki_ACTION_SET_IO_PIN_STATE_CALLED,
+                    ( int64_t )x_request.u_io_pin_index,
+                    ( int64_t )x_request.is_io_pin_state_high,
+                    x_description );
+
+    try
+    {
+        // mark the IO pin
+        u_io_pin_state_mask = 0x01U << ( x_request.u_io_pin_index );
+
+        // get current GPIO pin state from peripheral bridge
+        u_io_pin_state_current = px_peripheral_bridge_a->ReadLoGPIOData() >> 4U;
+        u_io_pin_state_current |= px_peripheral_bridge_b->ReadLoGPIOData() & 0xF0U;
+
+        if( px_peripheral_bridge_a->GetCurrentStatus() != 0U )
+        {
+            // unable to get peripheral bridge A current GPIO pin state
+            throw( ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_A_CURRENT_GPIO_PIN_STATE );
+        }
+
+
+        if( px_peripheral_bridge_b->GetCurrentStatus() != 0U )
+        {
+            // unable to get peripheral bridge B current GPIO pin state
+            throw( ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_B_CURRENT_GPIO_PIN_STATE );
+        }
+
+        // determine the new GPIO pin state
+        if( x_request.is_io_pin_state_high )
+        {
+            u_io_pin_state = ( u_io_pin_state_current | u_io_pin_state_mask );
+        }
+        else
+        {
+            u_io_pin_state = ( u_io_pin_state_current & ~( u_io_pin_state_mask ) );
+        }
+
+        // Set LO GPIO pin state of peripheral bridge
+        u_io_pin_state_nibble = ( u_io_pin_state << 4U );
+        i_state_peripheral_bridge = px_peripheral_bridge_a->SetLoGPIOData( u_io_pin_state_nibble );
+
+        if( i_state_peripheral_bridge != 0U )
+        {
+            // unable to set peripheral bridge A GPIO
+            throw( ki_ERROR_UNABLE_TO_SET_PERIPHERAL_BRIDGE_A_GPIO_PIN_STATE );
+        }
+
+        // Set HI GPIO pin state of peripheral bridge
+        u_io_pin_state_nibble = ( u_io_pin_state & 0xF0U );
+        i_state_peripheral_bridge = px_peripheral_bridge_b->SetLoGPIOData( u_io_pin_state_nibble );
+
+        if( i_state_peripheral_bridge != 0U )
+        {
+            // unable to set peripheral bridge B GPIO
+            throw( ki_ERROR_UNABLE_TO_SET_PERIPHERAL_BRIDGE_B_GPIO_PIN_STATE );
+        }
+
+        //preparing the log description
+        x_description = std::string( "Set IO pin state service requests, IO pin index " );
+        x_description += std::to_string( x_request.u_io_pin_index );
+        x_description += std::string( " IO pin state " );
+        x_description += std::to_string( x_request.is_io_pin_state_high );
+        x_description += std::string( " was served" );
+
+        // print and publish the log
+        v_log_action(   x_publisher_action_log,
+                        ( int64_t )ki_ACTION_SET_IO_PIN_STATE_COMPLETE,
+                        ( int64_t )x_request.u_io_pin_index,
+                        ( int64_t )x_request.is_io_pin_state_high,
+                        x_description );
+    }
+    catch( const int &ki_error )
+    {
+        std::string x_description;
+        int i_hardware_error_code;
+
+        b_return = false;
+
+        switch( ki_error )
+        {
+            case ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_A_CURRENT_GPIO_PIN_STATE:
+                i_hardware_error_code = px_peripheral_bridge_a->GetCurrentStatus();
+                x_description = std::string( "Unable to get peripheral bridge A current GPIO pin state" );
+                break;
+            case ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_B_CURRENT_GPIO_PIN_STATE:
+                i_hardware_error_code = px_peripheral_bridge_b->GetCurrentStatus();
+                x_description = std::string( "Unable to get peripheral bridge B current GPIO pin state" );
+                break;
+            case ki_ERROR_UNABLE_TO_SET_PERIPHERAL_BRIDGE_A_GPIO_PIN_STATE:
+                i_hardware_error_code = px_peripheral_bridge_a->GetCurrentStatus();
+                x_description = std::string( "Unable to set peripheral bridge A GPIO pin state" );
+                break;
+            case ki_ERROR_UNABLE_TO_SET_PERIPHERAL_BRIDGE_B_GPIO_PIN_STATE:
+                i_hardware_error_code = px_peripheral_bridge_b->GetCurrentStatus();
+                x_description = std::string( "Unable to set peripheral bridge B GPIO pin state" );
+                break;
+            default:
+                i_hardware_error_code = -1;
+                x_description = std::string( "Unknown error" );
+        }
+
+        v_log_hardware_error(   x_publisher_hardware_error_log,
+                                ( int64_t ) ki_error,
+                                ( int64_t ) i_hardware_error_code,
+                                x_description );
+    }
+
+    return b_return;
 }
 
 int main( int argc, char** argv )
@@ -235,7 +370,9 @@ int main( int argc, char** argv )
             throw( ki_ERROR_UNABLE_TO_INIT_PERIPHERAL_BRIDGE_B_GPIO );
         }
 
+        // register service server to ROS
         x_service_server_get_depth = x_node_handle.advertiseService( "/sensor/pressure", b_service_get_depth );
+        x_service_server_get_depth = x_node_handle.advertiseService( "set_io_pin_state", b_set_io_pin_state );
         
         ros::Rate x_rate( 100U );
 
@@ -261,7 +398,7 @@ int main( int argc, char** argv )
                         x_description = std::string( "Unable to receive barometer value from peripheral bridge" );
                         break;
                     default:
-                        i_hardware_error_code = 0U;
+                        i_hardware_error_code = -1;
                         x_description = std::string( "Unknown error" );
                         break;
                 }
@@ -289,22 +426,23 @@ int main( int argc, char** argv )
         switch( ki_error )
         {
             case ki_ERROR_UNABLE_TO_OPEN_PERIPHERAL_BRIDGE_A:
-                x_description = std::string( "Unable to initialize peripheral bridge A" );
                 i_hardware_error_code = px_peripheral_bridge_a->GetCurrentStatus();
+                x_description = std::string( "Unable to initialize peripheral bridge A" );
                 break;
             case ki_ERROR_UNABLE_TO_OPEN_PERIPHERAL_BRIDGE_B:
-                x_description = std::string( "Unable to initialize peripheral bridge B" );
                 i_hardware_error_code = px_peripheral_bridge_b->GetCurrentStatus();
+                x_description = std::string( "Unable to initialize peripheral bridge B" );
                 break;
             case ki_ERROR_UNABLE_TO_INIT_PERIPHERAL_BRIDGE_A_GPIO:
-                x_description = std::string( "Unable to initialize GPIO direction and GPIO pin state of peripheral bridge A" );
                 i_hardware_error_code = px_peripheral_bridge_a->GetCurrentStatus();
+                x_description = std::string( "Unable to initialize GPIO direction and GPIO pin state of peripheral bridge A" );
                 break;
             case ki_ERROR_UNABLE_TO_INIT_PERIPHERAL_BRIDGE_B_GPIO:
-                x_description = std::string( "Unable to initialize GPIO direction and GPIO pin state of peripheral bridge B" );
                 i_hardware_error_code = px_peripheral_bridge_b->GetCurrentStatus();
+                x_description = std::string( "Unable to initialize GPIO direction and GPIO pin state of peripheral bridge B" );
                 break;
             default:
+                i_hardware_error_code = -1;
                 x_description = std::string( "Unknown error" );
         }
 

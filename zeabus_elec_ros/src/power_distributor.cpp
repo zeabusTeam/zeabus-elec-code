@@ -97,7 +97,7 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_
 
         // print and publish unable to set GPIO pin state of power distributor log
         v_log_hardware_error(   x_publisher_hardware_error_log,
-                                ( int64_t )ki_ERROR_UNABLE_TO_SET_POWER_DISTRIBUTOR_GPIO,
+                                ( int64_t )ki_ERROR_UNABLE_TO_SET_POWER_DISTRIBUTOR_GPIO_PIN_STATE,
                                 ( int64_t )i_status_power_dist,
                                 std::string( "Unable to set GPIO pin state of power distributor" ) );
     }
@@ -172,7 +172,7 @@ int main( int argc, char **argv )
         }
 
         // register service server to ROS
-        x_service_server_power_switch = x_node_handle.advertiseService( "power_switch", b_set_power_swtich );
+        x_service_server_power_switch = x_node_handle.advertiseService( "set_power_switch", b_set_power_swtich );
 
         // look for callbacks forever
         ros::spin();
