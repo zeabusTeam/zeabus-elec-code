@@ -45,9 +45,9 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_
     
     // print and publish service requests was received log
     v_log_action(   x_publisher_action_log,
-                    ( int64_t )ki_ACTION_SET_POWER_SWITCH_CALLED,
-                    ( int64_t )x_request.u_switch_index,
-                    ( int64_t )x_request.is_switch_high,
+                    ki_ACTION_SET_POWER_SWITCH_CALLED,
+                    ( int)x_request.u_switch_index,
+                    ( int )x_request.is_switch_high,
                     x_description );
 
     // mark requested GPIO pin
@@ -77,8 +77,8 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_
 
         // print and publish unable to set GPIO pin state of power distributor log
         v_log_hardware_error(   x_publisher_hardware_error_log,
-                                ( int64_t )ki_ERROR_UNABLE_TO_SET_POWER_DISTRIBUTOR_GPIO_PIN_STATE,
-                                ( int64_t )i_status_power_distributor,
+                                ki_ERROR_UNABLE_TO_SET_POWER_DISTRIBUTOR_GPIO_PIN_STATE,
+                                i_status_power_distributor,
                                 std::string( "Unable to set GPIO pin state of power distributor" ) );
     }
 
@@ -91,9 +91,9 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_
 
     // print and publish service requests was servede log
     v_log_action(   x_publisher_action_log,
-                    ( int64_t )ki_ACTION_SET_POWER_SWTICH_COMPLETE,
-                    ( int64_t )x_request.u_switch_index,
-                    ( int64_t )x_request.is_switch_high,
+                    ki_ACTION_SET_POWER_SWTICH_COMPLETE,
+                    ( int )x_request.u_switch_index,
+                    ( int )x_request.is_switch_high,
                     x_description );
 
     return b_return;
@@ -179,8 +179,8 @@ int main( int argc, char **argv )
 
         // print and publish the log
         v_log_hardware_error_fatal( x_publisher_hardware_error_log,
-                                    ( int64_t )ki_error,
-                                    ( int64_t )px_power_distributor->GetCurrentStatus(),
+                                    ki_error,
+                                    px_power_distributor->GetCurrentStatus(),
                                     x_description );
     }
 
