@@ -23,6 +23,7 @@ add_message_files(
     MessageNodeStatus.msg
     MessageHardwareError.msg
     MessageAction.msg
+    MessageBarometerValue.msg
 )
 
 ## Generate services in the 'srv' folder

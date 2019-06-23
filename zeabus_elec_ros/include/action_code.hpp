@@ -9,12 +9,9 @@
 const int ki_ACTION_SET_POWER_SWITCH_CALLED =       150U;
 const int ki_ACTION_SET_POWER_SWTICH_COMPLETE =     151U;
 
-const int ki_ACTION_GET_BAROMETER_VALUE_CALLED =    250U;
-const int ki_ACTION_GET_BAROMETER_VALUE_COMPLETE =  251U;
-const int ki_ACTION_GET_DEPTH_CALLED =              252U;
-const int ki_ACTION_GET_DEPTH_COMPLETE =            253U;
-const int ki_ACTION_DEPTH_CALCULATED =              254U;
-const int ki_ACTION_SET_IO_PIN_STATE_CALLED =       255U;
-const int ki_ACTION_SET_IO_PIN_STATE_COMPLETE =     256U;
+const int ki_ACTION_GET_DEPTH_CALLED =              250U;
+const int ki_ACTION_GET_DEPTH_COMPLETE =            251U;
+const int ki_ACTION_SET_IO_PIN_STATE_CALLED =       252U;
+const int ki_ACTION_SET_IO_PIN_STATE_COMPLETE =     253U;
 
 #endif
