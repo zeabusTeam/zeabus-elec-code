@@ -12,7 +12,7 @@
 #include "zeabus_elec_ros/MessageNodeStatus.h"
 #include "zeabus_elec_ros/MessageHardwareError.h"
 #include "zeabus_elec_ros/MessageAction.h"
-#include "zeabus_elec_ros/ServicePowerSwitch.h"
+#include "zeabus_elec_ros/ServiceSetPowerSwitch.h"
 #include "ftdi_impl.h"
 #include "logger.hpp"
 
@@ -20,8 +20,8 @@ static const std::string kx_POWER_DISTRIBUTOR_DESCRIPTION = "PowerDist";
 static const uint16_t kus_INITIAL_IO_DIRECTION =            0xFFFFU;
 static const uint16_t kus_INITIAL_IO_PIN_STATE =            0x0000U;
 
-static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_request,
-                                zeabus_elec_ros::ServicePowerSwitch::Response &x_response )
+static bool b_set_power_swtich( zeabus_elec_ros::ServiceSetPowerSwitch::Request &x_request,
+                                zeabus_elec_ros::ServiceSetPowerSwitch::Response &x_response );
 
 static std::shared_ptr<Zeabus_Elec::ftdi_mpsse_impl> px_power_distributor;
 
@@ -31,8 +31,8 @@ static ros::Publisher x_publisher_action_log;
 
 static ros::ServiceServer x_service_server_power_switch;
 
-static bool b_set_power_swtich( zeabus_elec_ros::ServicePowerSwitch::Request &x_request,
-                                zeabus_elec_ros::ServicePowerSwitch::Response &x_response )
+static bool b_set_power_swtich( zeabus_elec_ros::ServiceSetPowerSwitch::Request &x_request,
+                                zeabus_elec_ros::ServiceSetPowerSwitch::Response &x_response )
 {
     bool b_return = true;
     int i_status_power_distributor;

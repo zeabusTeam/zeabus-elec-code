@@ -16,7 +16,7 @@
 #include "zeabus_elec_ros/MessageAction.h"
 #include "zeabus_elec_ros/MessageBarometerValue.h"
 #include "zeabus_elec_ros/MessageIOPinState.h"
-#include "zeabus_elec_ros/ServiceIOPinState.h"
+#include "zeabus_elec_ros/ServiceSetIOPinState.h"
 #include "ftdi_impl.h"
 #include "logger.hpp"
 
@@ -28,8 +28,8 @@ static void v_get_barometer_value( void );
 static void v_get_io_pin_state( void );
 static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_request,
                                     zeabus_utility::ServiceDepth::Response &x_response );
-static bool b_set_io_pin_state( zeabus_elec_ros::ServiceIOPinState::Request &x_request,
-                                zeabus_elec_ros::ServiceIOPinState::Response &x_response );
+static bool b_set_io_pin_state( zeabus_elec_ros::ServiceSetIOPinState::Request &x_request,
+                                zeabus_elec_ros::ServiceSetIOPinState::Response &x_response );
 static double lf_barometer_value_to_depth( const uint16_t &us_barometer_value );
 
 static std::shared_ptr<Zeabus_Elec::ftdi_impl> px_peripheral_bridge_a, px_peripheral_bridge_b;
@@ -171,8 +171,8 @@ static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_req
     return true;
 }
 
-static bool b_set_io_pin_state( zeabus_elec_ros::ServiceIOPinState::Request &x_request,
-                                zeabus_elec_ros::ServiceIOPinState::Response &x_response )
+static bool b_set_io_pin_state( zeabus_elec_ros::ServiceSetIOPinState::Request &x_request,
+                                zeabus_elec_ros::ServiceSetIOPinState::Response &x_response )
 {
     uint8_t u_io_pin_state_nibble, u_io_pin_state, u_io_pin_state_current, u_io_pin_state_mask;
     int i_state_peripheral_bridge;
