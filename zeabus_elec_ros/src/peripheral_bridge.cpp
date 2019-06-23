@@ -424,6 +424,14 @@ int main( int argc, char** argv )
                         i_hardware_error_code = px_peripheral_bridge_a->GetCurrentStatus();
                         x_description = std::string( "Unable to receive barometer value from peripheral bridge" );
                         break;
+                    case ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_A_CURRENT_GPIO_PIN_STATE:
+                        i_hardware_error_code = px_peripheral_bridge_a->GetCurrentStatus();
+                        x_description = std::string( "Unable to get peripheral bridge A current GPIO pin state" );
+                        break;
+                    case ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_B_CURRENT_GPIO_PIN_STATE:
+                        i_hardware_error_code = px_peripheral_bridge_b->GetCurrentStatus();
+                        x_description = std::string( "Unable to get peripheral bridge B current GPIO pin state" );
+                        break;
                     default:
                         i_hardware_error_code = -1;
                         x_description = std::string( "Unknown error" );
