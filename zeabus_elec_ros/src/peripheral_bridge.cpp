@@ -15,6 +15,7 @@
 #include "zeabus_elec_ros/MessageHardwareError.h"
 #include "zeabus_elec_ros/MessageAction.h"
 #include "zeabus_elec_ros/MessageBarometerValue.h"
+#include "zeabus_elec_ros/MessageIOPinState.h"
 #include "zeabus_elec_ros/ServiceIOPinState.h"
 #include "ftdi_impl.h"
 #include "logger.hpp"
@@ -24,6 +25,7 @@ static const double klf_ONE_ATM_AS_PSI =                    14.6959;
 static const double klf_PSI_PER_DEPTH =                     0.6859;
 
 static void v_get_barometer_value( void );
+static void v_get_io_pin_state( void );
 static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_request,
                                     zeabus_utility::ServiceDepth::Response &x_response );
 static bool b_set_io_pin_state( zeabus_elec_ros::ServiceIOPinState::Request &x_request,
@@ -37,11 +39,13 @@ static ros::Publisher x_publisher_hardware_error_log;
 static ros::Publisher x_publisher_action_log;
 
 static ros::Publisher x_publisher_barometer_value;
+static ros::Publisher x_publisher_io_pin_state;
 static ros::ServiceServer x_service_server_get_depth;
 static ros::ServiceServer x_service_server_set_io_pin_state;
 
 static zeabus_utility::ServiceDepth::Response x_depth_state;
 static double lf_atm_pressure, lf_depth_offset;
+static uint8_t u_io_pin_state;
 
 static void v_get_barometer_value( void )
 {
@@ -94,6 +98,43 @@ static void v_get_barometer_value( void )
 
     // write depth into depth_state
     x_depth_state.depth = lf_depth;
+
+    return;
+}
+
+static void v_get_io_pin_state( void )
+{
+    uint8_t u_io_pin_state_current;
+    zeabus_elec_ros::MessageIOPinState x_message_io_pin_state;
+
+    // stamp IO pin state sample time on io_pin_state
+    x_message_io_pin_state.header.stamp = ros::Time::now();
+
+    // get current GPIO pin state from peripheral bridge
+    u_io_pin_state_current = px_peripheral_bridge_a->ReadLoGPIOData() >> 4U;
+    u_io_pin_state_current |= px_peripheral_bridge_b->ReadLoGPIOData() & 0xF0U;
+
+    if( px_peripheral_bridge_a->GetCurrentStatus() != 0U )
+    {
+        // unable to get peripheral bridge A current GPIO pin state
+        throw( ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_A_CURRENT_GPIO_PIN_STATE );
+    }
+
+
+    if( px_peripheral_bridge_b->GetCurrentStatus() != 0U )
+    {
+        // unable to get peripheral bridge B current GPIO pin state
+        throw( ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_B_CURRENT_GPIO_PIN_STATE );
+    }
+
+    // write IO pin state into io_pin_state
+    u_io_pin_state = u_io_pin_state_current;
+
+    // prepare IO pin state log
+    x_message_io_pin_state.u_io_pin_state = u_io_pin_state;
+
+    // publish IO pin state log
+    x_publisher_io_pin_state.publish( x_message_io_pin_state );
 
     return;
 }
@@ -350,7 +391,8 @@ int main( int argc, char** argv )
         }
 
         // register publisher to ROS
-        x_publisher_barometer_value = x_node_handle.advertise<zeabus_elec_ros::MessageBarometerValue>( "barometer_value", 100U );
+        x_publisher_barometer_value =   x_node_handle.advertise<zeabus_elec_ros::MessageBarometerValue>( "barometer_value", 100U );
+        x_publisher_io_pin_state =      x_node_handle.advertise<zeabus_elec_ros::MessageIOPinState>( "io_pin_state", 100U );
 
         // register service server to ROS
         x_service_server_get_depth =        x_node_handle.advertiseService( "/sensor/pressure", b_service_get_depth );
@@ -364,6 +406,7 @@ int main( int argc, char** argv )
             try
             {
                 v_get_barometer_value();
+                v_get_io_pin_state();
             }
             catch( const int &ki_error )
             {
