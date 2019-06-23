@@ -11,7 +11,7 @@
 #include <string>
 #include <algorithm>
 
-#include <zeabus_utility/DepthCommand.h>
+#include <zeabus_utility/ServiceDepth.h>
 #include <zeabus_utility/SendThrottle.h>
 #include <zeabus_utility/Telemetry.h>
 #include <zeabus_elec_ros_hardware_interface/PowerSwitchCommand.h>
@@ -48,7 +48,7 @@ static ros::ServiceClient thruster_throttle_service_client;
 
 static double atm_pressure, depth_offset;
 
-static zeabus_utility::DepthCommand::Response depth_state;
+static zeabus_utility::ServiceDepth::Response depth_state;
 static zeabus_utility::Telemetry::Response telemetry_state;
 
 void barometer_value_to_depth(const zeabus_elec_ros_peripheral_bridge::barometer::ConstPtr& msg)
@@ -86,7 +86,7 @@ void telemetry_parser(const zeabus_elec_ros_etcam::Telemetry::ConstPtr& msg)
     boost::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> boost_telemetry;
     std::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> telemetry;
     std::array<libetcam::TelemetryStruct, libetcam::ku_THRUSTER_NUMBER> parsed_telemetry;
-    boost::array<zeabus_utility::TelemetryStruct, libetcam::ku_THRUSTER_NUMBER> boost_parsed_telemetry;
+    boost::array<zeabus_utility::StructTelemetry, libetcam::ku_THRUSTER_NUMBER> boost_parsed_telemetry;
     
     boost_telemetry = msg->au_telemetry;
     std::copy(boost_telemetry.begin(), boost_telemetry.end(), telemetry.begin());
@@ -106,8 +106,8 @@ void telemetry_parser(const zeabus_elec_ros_etcam::Telemetry::ConstPtr& msg)
     telemetry_state.header = msg->header;
 }
 
-bool get_depth(zeabus_utility::DepthCommand::Request &req,
-                    zeabus_utility::DepthCommand::Response &res)
+bool get_depth(zeabus_utility::ServiceDepth::Request &req,
+                    zeabus_utility::ServiceDepth::Response &res)
 {
     res = depth_state;
 
