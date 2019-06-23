@@ -227,6 +227,7 @@ static bool b_set_io_pin_state( zeabus_elec_ros::ServiceIOPinState::Request &x_r
 
         b_return = false;
 
+        // prepare the log
         switch( ki_error )
         {
             case ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_A_CURRENT_GPIO_PIN_STATE:
@@ -250,6 +251,7 @@ static bool b_set_io_pin_state( zeabus_elec_ros::ServiceIOPinState::Request &x_r
                 x_description = std::string( "Unknown error" );
         }
 
+        // print and publish the log
         v_log_hardware_error(   x_publisher_hardware_error_log,
                                 ( int64_t ) ki_error,
                                 ( int64_t ) i_hardware_error_code,
@@ -354,6 +356,7 @@ int main( int argc, char** argv )
         x_service_server_get_depth =        x_node_handle.advertiseService( "/sensor/pressure", b_service_get_depth );
         x_service_server_set_io_pin_state = x_node_handle.advertiseService( "set_io_pin_state", b_set_io_pin_state );
         
+        // define frequency of this node
         ros::Rate x_rate( 100U );
 
         while( ros::ok() )
@@ -367,6 +370,7 @@ int main( int argc, char** argv )
                 std::string x_description;
                 int i_hardware_error_code;
 
+                // prepare the log
                 switch( ki_error )
                 {
                     case ki_ERROR_UNABLE_TO_REQURST_BAROMETER_VALUE:
@@ -383,14 +387,17 @@ int main( int argc, char** argv )
                         break;
                 }
 
+                // print and publish the log
                 v_log_hardware_error(   x_publisher_hardware_error_log,
                                         ( int64_t ) ki_error,
                                         ( int64_t ) i_hardware_error_code,
                                         x_description );
             }
 
+            // look for callback
             ros::spinOnce();
 
+            // wait for next iteration
             x_rate.sleep();
         }
     }
