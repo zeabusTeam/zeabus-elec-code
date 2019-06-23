@@ -372,7 +372,7 @@ int main( int argc, char** argv )
 
         // register service server to ROS
         x_service_server_get_depth = x_node_handle.advertiseService( "/sensor/pressure", b_service_get_depth );
-        x_service_server_get_depth = x_node_handle.advertiseService( "set_io_pin_state", b_set_io_pin_state );
+        x_service_server_set_io_pin_state = x_node_handle.advertiseService( "set_io_pin_state", b_set_io_pin_state );
         
         ros::Rate x_rate( 100U );
 
