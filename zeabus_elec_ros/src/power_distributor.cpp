@@ -16,29 +16,9 @@
 #include "ftdi_impl.h"
 #include "logger.hpp"
 
-extern void v_log_node_status(  const ros::Publisher &kx_publisher, 
-                                const std::string &kx_description_assigned );
-
-extern void v_log_hardware_error(   const ros::Publisher &kx_publisher,
-                                    const int64_t &kl_error_code_assigned, 
-                                    const int64_t &kl_hardware_status_code_assigned, 
-                                    const std::string &kx_description_assigned );
-
-extern void v_log_hardware_error_fatal( const ros::Publisher &kx_publisher, 
-                                        const int64_t &kl_error_code_assigned, 
-                                        const int64_t &kl_hardware_status_code_assigned, 
-                                        const std::string &kx_description_assigned );
-
-extern void v_log_action(   const ros::Publisher &kx_publisher, 
-                            const int64_t &kl_action_assigned, 
-                            const int64_t &kl_value1_assigned, 
-                            const int64_t &kl_value2_assigned, 
-                            const std::string &kx_description_assigned );
-
 static const std::string kx_POWER_DISTRIBUTOR_DESCRIPTION = "PowerDist";
-
-static const uint16_t kus_INITIAL_IO_DIRECTION =    0xFFFFU;
-static const uint16_t kus_INITIAL_IO_PIN_STATE =    0x0000U;
+static const uint16_t kus_INITIAL_IO_DIRECTION =            0xFFFFU;
+static const uint16_t kus_INITIAL_IO_PIN_STATE =            0x0000U;
 
 static std::shared_ptr<Zeabus_Elec::ftdi_mpsse_impl> px_power_distributor;
 
