@@ -78,8 +78,7 @@ void v_log_hardware_error_fatal(    const ros::Publisher &kx_publisher,
 
 void v_log_action(  const ros::Publisher &kx_publisher, 
                     const int &ki_action_assigned, 
-                    const int &ki_value1_assigned, 
-                    const int &ki_value2_assigned, 
+                    const std::vector<int> &x_vector_value_assigned,
                     const std::string &kx_description_assigned )
 {
     zeabus_elec_ros::MessageAction x_message;
@@ -88,8 +87,10 @@ void v_log_action(  const ros::Publisher &kx_publisher,
     x_message.header.stamp = ros::Time::now();
 
     x_message.l_action = ki_action_assigned;
-    x_message.l_value1 = ki_value1_assigned;
-    x_message.l_value2 = ki_value2_assigned;
+    for( int item : x_vector_value_assigned )
+    {
+        x_message.x_vector_value.push_back( item );
+    }
 
     x_message.x_description = kx_description_assigned;
 

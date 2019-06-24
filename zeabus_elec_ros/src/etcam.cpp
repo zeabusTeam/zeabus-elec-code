@@ -128,8 +128,7 @@ static bool b_set_thruster_throttle(    zeabus_utility::SendThrottle::Request &x
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_SET_THRUSTER_THROTTLE_CALLED,
-                    0U,
-                    0U,
+                    { },
                     x_description );
 
     // parse human throttle to DSHOT throttle
@@ -182,8 +181,7 @@ static bool b_set_thruster_throttle(    zeabus_utility::SendThrottle::Request &x
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_SET_THRUSTER_THROTTLE_COMPLETE,
-                    0U,
-                    0U,
+                    { },
                     x_description );
 
     return b_return;
@@ -200,8 +198,7 @@ static bool b_get_telemetry(    zeabus_utility::ServiceGetTelemetry::Request &x_
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_GET_TELEMETRY_CALLED,
-                    0U,
-                    0U,
+                    { },
                     x_description );
 
     // response with telemetry state
@@ -213,8 +210,7 @@ static bool b_get_telemetry(    zeabus_utility::ServiceGetTelemetry::Request &x_
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_GET_TELEMETRY_COMPLETE,
-                    0U,
-                    0U,
+                    { },
                     x_description );
 
 

@@ -49,8 +49,7 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServiceSetPowerSwitch::Request 
     // print and publish service requests was received log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_SET_POWER_SWITCH_CALLED,
-                    ( int)x_request.u_switch_index,
-                    ( int )x_request.is_switch_high,
+                    { x_request.u_switch_index, x_request.is_switch_high },
                     x_description );
 
     // mark requested GPIO pin
@@ -95,8 +94,7 @@ static bool b_set_power_swtich( zeabus_elec_ros::ServiceSetPowerSwitch::Request 
     // print and publish service requests was servede log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_SET_POWER_SWTICH_COMPLETE,
-                    ( int )x_request.u_switch_index,
-                    ( int )x_request.is_switch_high,
+                    { x_request.u_switch_index, x_request.is_switch_high },
                     x_description );
 
     return b_return;

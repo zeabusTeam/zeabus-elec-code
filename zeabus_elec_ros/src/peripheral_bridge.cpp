@@ -150,8 +150,7 @@ static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_req
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_GET_DEPTH_CALLED,
-                    ( int )0U,
-                    ( int )0U,
+                    { },
                     x_description );
 
     // response with depth_state
@@ -164,8 +163,7 @@ static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_req
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_GET_DEPTH_COMPLETE,
-                    ( int )( x_depth_state.depth * 100U ),
-                    ( int )0U,
+                    { ( x_depth_state.depth ) * 100U },
                     x_description );
 
     return true;
@@ -191,8 +189,7 @@ static bool b_set_io_pin_state( zeabus_elec_ros::ServiceSetIOPinState::Request &
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_SET_IO_PIN_STATE_CALLED,
-                    ( int )x_request.u_io_pin_index,
-                    ( int )x_request.is_io_pin_state_high,
+                    { x_request.u_io_pin_index, x_request.is_io_pin_state_high },
                     x_description );
 
     try
@@ -257,8 +254,7 @@ static bool b_set_io_pin_state( zeabus_elec_ros::ServiceSetIOPinState::Request &
         // print and publish the log
         v_log_action(   x_publisher_action_log,
                         ki_ACTION_SET_IO_PIN_STATE_COMPLETE,
-                        ( int )x_request.u_io_pin_index,
-                        ( int )x_request.is_io_pin_state_high,
+                        { x_request.u_io_pin_index, x_request.is_io_pin_state_high },
                         x_description );
     }
     catch( const int &ki_error )
