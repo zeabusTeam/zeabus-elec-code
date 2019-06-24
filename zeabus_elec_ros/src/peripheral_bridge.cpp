@@ -87,7 +87,7 @@ static void v_get_barometer_value( void )
     us_barometer_value >>= 1U;
 
     // prepare barometer value log 
-    x_message_barometer_value.header.stamp = ros::Time::now();
+    x_message_barometer_value.header.stamp = x_depth_state.header.stamp;
     x_message_barometer_value.us_barometer_value = us_barometer_value;
 
     // publish barometer value log
