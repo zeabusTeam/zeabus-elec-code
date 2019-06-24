@@ -1,4 +1,4 @@
-peripheral_bridge<launch2
+<launch>
 
     <node pkg="zeabus_elec_ros" type="power_distributor_node" name="zeabus_elec_power_distributor" respawn="true">
         <param name="i_initial_io_direction" value="65535"/>
