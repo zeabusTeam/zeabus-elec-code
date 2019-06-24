@@ -1,0 +1,7 @@
+<launch>
+
+    <include file="$(find zeabus_elec_ros)/launch/power_distributor.launch"/>
+    <include file="$(find zeabus_elec_ros)/launch/peripheral_bridge.launch"/>
+    <include file="$(find zeabus_elec_ros)/launch/etcam.launch"/>
+
+</launch>
