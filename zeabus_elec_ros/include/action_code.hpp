@@ -6,12 +6,17 @@
 #ifndef ACTION_CODE_HPP
 #define ACTION_CODE_HPP
 
-const int ki_ACTION_SET_POWER_SWITCH_CALLED =       150U;
-const int ki_ACTION_SET_POWER_SWTICH_COMPLETE =     151U;
+const int ki_ACTION_SET_POWER_SWITCH_CALLED =           150U;
+const int ki_ACTION_SET_POWER_SWTICH_COMPLETE =         151U;
 
-const int ki_ACTION_GET_DEPTH_CALLED =              250U;
-const int ki_ACTION_GET_DEPTH_COMPLETE =            251U;
-const int ki_ACTION_SET_IO_PIN_STATE_CALLED =       252U;
-const int ki_ACTION_SET_IO_PIN_STATE_COMPLETE =     253U;
+const int ki_ACTION_GET_DEPTH_CALLED =                  250U;
+const int ki_ACTION_GET_DEPTH_COMPLETE =                251U;
+const int ki_ACTION_SET_IO_PIN_STATE_CALLED =           252U;
+const int ki_ACTION_SET_IO_PIN_STATE_COMPLETE =         253U;
+
+const int ki_ACTION_SET_THRUSTER_THROTTLE_CALLED =      350U;
+const int ki_ACTION_SET_THRUSTER_THROTTLE_COMPLETE =    351U;
+const int ki_ACTION_GET_TELEMETRY_CALLED =              352U;
+const int ki_ACTION_GET_TELEMETRY_COMPLETE =            353U;
 
 #endif

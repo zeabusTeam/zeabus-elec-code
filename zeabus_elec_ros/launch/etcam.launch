@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="zeabus_elec_ros" type="etcam_node" name="zeabus_elec_etcam" respawn="true">
+        <param name="x_initial_device_path" value="/dev/ttyUSB0"/>
+    </node>
+
+</launch>

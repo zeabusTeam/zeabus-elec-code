@@ -1,3 +1,0 @@
-<launch>
-	<node pkg="zeabus_elec_ros_etcam" type="zeabus_elec_ros_etcam" name="Zeabus_Elec_ETCAM" respawn="true"></node>
-</launch>

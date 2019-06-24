@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     message_generation
     std_msgs
+    zeabus_utility
+    zeabus_library_cpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -25,6 +27,7 @@ add_message_files(
     MessageAction.msg
     MessageBarometerValue.msg
     MessageIOPinState.msg
+    MessageTelemetryValue.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -38,6 +41,7 @@ add_service_files(
 generate_messages(
     DEPENDENCIES
     std_msgs
+    zeabus_utility
 )
 
 ###################################
@@ -69,42 +73,63 @@ include_directories(
   ${FTDI_INCLUDE_DIRS}
   include
   ../zeabus_elec_ftdi_lib
+  ../libetcam/include/
+)
+
+link_directories(
+    ../libetcam
 )
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable( power_distributor
+add_executable( power_distributor_node
   src/power_distributor.cpp
   src/logger.cpp
   ../zeabus_elec_ftdi_lib/ftdi_impl.cpp
 )
 
-add_executable( peripheral_bridge
+add_executable( peripheral_bridge_node
   src/peripheral_bridge.cpp
   src/logger.cpp
   ../zeabus_elec_ftdi_lib/ftdi_impl.cpp
 )
 
+add_executable( etcam_node
+  src/etcam.cpp
+  src/logger.cpp
+)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies( power_distributor
+add_dependencies( power_distributor_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 
-add_dependencies( peripheral_bridge
+add_dependencies( peripheral_bridge_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies( etcam_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries( power_distributor
+target_link_libraries( power_distributor_node
   ${catkin_LIBRARIES}
   ftdi1
 )
 
-target_link_libraries( peripheral_bridge
+target_link_libraries( peripheral_bridge_node
   ${catkin_LIBRARIES}
   ftdi1
+)
+
+target_link_libraries( etcam_node
+  ${catkin_LIBRARIES}
+  ${zeabus_library_cpp_LIBRARIES}
+  etcam
 )

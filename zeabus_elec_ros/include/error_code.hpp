@@ -23,4 +23,9 @@ const int ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_B_CURRENT_GPIO_PIN_STATE =   
 const int ki_ERROR_UNABLE_TO_SET_PERIPHERAL_BRIDGE_A_GPIO_PIN_STATE =           208U;
 const int ki_ERROR_UNABLE_TO_SET_PERIPHERAL_BRIDGE_B_GPIO_PIN_STATE =           209U;
 
+const int ki_ERROR_UNABLE_TO_OPEN_ETCAM =                                       300U;
+const int ki_ERROR_UNABLE_TO_RECEIVE_ETCAM_TELEMETRY_SYNC =                     301U;
+const int ki_ERROR_UNABLE_TO_RECEIVE_ETCAM_TELEMETRY =                          302U;
+const int ki_ERROR_UNALBE_TO_SET_ETCAM_THRUSTER_THROTTLE =                      303U;
+
 #endif
