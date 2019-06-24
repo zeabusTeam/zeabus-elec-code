@@ -1,7 +1,13 @@
 <launch>
 
+    <arg name="atm_pressure_arg" default="14.6959"/>
+    <arg name="depth_offset_arg" default="0"/>
+
     <include file="$(find zeabus_elec_ros)/launch/power_distributor.launch"/>
-    <include file="$(find zeabus_elec_ros)/launch/peripheral_bridge.launch"/>
+
+    <include file="$(find zeabus_elec_ros)/launch/peripheral_bridge.launch"
+        pass_all_args="true"/>
+
     <include file="$(find zeabus_elec_ros)/launch/etcam.launch"/>
 
 </launch>
