@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "zeabus_utility/MessagePlannerSwitch.h"
 #include "zeabus_utility/ServiceDepth.h"
 #include "zeabus_elec_ros/MessageNodeStatus.h"
 #include "zeabus_elec_ros/MessageHardwareError.h"
@@ -40,12 +41,13 @@ static ros::Publisher x_publisher_action_log;
 
 static ros::Publisher x_publisher_barometer_value;
 static ros::Publisher x_publisher_io_pin_state;
+static ros::Publisher x_publisher_planner_switch;
 static ros::ServiceServer x_service_server_get_depth;
 static ros::ServiceServer x_service_server_set_io_pin_state;
 
 static zeabus_utility::ServiceDepth::Response x_depth_state;
+static zeabus_elec_ros::MessageIOPinState x_io_pin_state;
 static double lf_atm_pressure, lf_depth_offset;
-static uint8_t u_io_pin_state;
 
 static void v_get_barometer_value( void )
 {
@@ -127,15 +129,35 @@ static void v_get_io_pin_state( void )
         throw( ki_ERROR_UNABLE_TO_GET_PERIPHERAL_BRIDGE_B_CURRENT_GPIO_PIN_STATE );
     }
 
-    // write IO pin state into io_pin_state
-    u_io_pin_state = u_io_pin_state_current;
-
     // prepare IO pin state log
-    x_message_io_pin_state.u_io_pin_state = u_io_pin_state;
+    x_message_io_pin_state.u_io_pin_state = u_io_pin_state_current;
+
+    // save IO pin state to io_pin_state
+    x_io_pin_state = x_message_io_pin_state;
 
     // publish IO pin state log
     x_publisher_io_pin_state.publish( x_message_io_pin_state );
 
+    return;
+}
+
+static void v_send_planner_switch( void )
+{
+    zeabus_utility::MessagePlannerSwitch x_message_planner_swtich;
+    bool is_planner_switch_high;
+    
+    // extract planner switch state from io_pin_state
+    is_planner_switch_high = ( x_io_pin_state.u_io_pin_state ) & 0x04U;
+
+    // copy IO pin state sample time to the message
+    x_message_planner_swtich.header.stamp = x_io_pin_state.header.stamp;
+
+    // prepare planner switch message
+    x_message_planner_swtich.planner_switch_state = is_planner_switch_high;
+
+    // publish planner switch message
+    x_publisher_planner_switch.publish( x_message_planner_swtich );
+    
     return;
 }
 
@@ -163,7 +185,7 @@ static bool b_service_get_depth(    zeabus_utility::ServiceDepth::Request &x_req
     // print and publish the log
     v_log_action(   x_publisher_action_log,
                     ki_ACTION_GET_DEPTH_COMPLETE,
-                    { ( x_depth_state.depth ) * 100U },
+                    { ( ( int )( x_depth_state.depth ) ) * 100 },
                     x_description );
 
     return true;
@@ -389,6 +411,7 @@ int main( int argc, char** argv )
         // register publisher to ROS
         x_publisher_barometer_value =   x_node_handle.advertise<zeabus_elec_ros::MessageBarometerValue>( "barometer_value", 100U );
         x_publisher_io_pin_state =      x_node_handle.advertise<zeabus_elec_ros::MessageIOPinState>( "io_pin_state", 100U );
+        x_publisher_planner_switch =    x_node_handle.advertise<zeabus_utility::MessagePlannerSwitch>( "planner_switch", 100U );
 
         // register service server to ROS
         x_service_server_get_depth =        x_node_handle.advertiseService( "/sensor/pressure", b_service_get_depth );
@@ -403,6 +426,7 @@ int main( int argc, char** argv )
             {
                 v_get_barometer_value();
                 v_get_io_pin_state();
+                v_send_planner_switch();
             }
             catch( const int &ki_error )
             {

@@ -4,7 +4,7 @@
     <arg name="depth_offset_arg" default="0"/>
 
     <node pkg="zeabus_elec_ros" type="peripheral_bridge_node" name="zeabus_elec_peripheral_bridge" respawn="true">
-        <param name="i_initial_io_direection_a" value="65535"/>
+        <param name="i_initial_io_direection_a" value="16"/>
         <param name="i_initial_io_pin_state_a" value="0"/>
         <param name="i_initial_io_direction_b" value="65535"/>
         <param name="i_initial_io_pin_state_b" value="0"/>
