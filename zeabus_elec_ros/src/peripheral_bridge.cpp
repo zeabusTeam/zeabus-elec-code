@@ -411,7 +411,7 @@ int main( int argc, char** argv )
         // register publisher to ROS
         x_publisher_barometer_value =   x_node_handle.advertise<zeabus_elec_ros::MessageBarometerValue>( "barometer_value", 100U );
         x_publisher_io_pin_state =      x_node_handle.advertise<zeabus_elec_ros::MessageIOPinState>( "io_pin_state", 100U );
-        x_publisher_planner_switch =    x_node_handle.advertise<zeabus_utility::MessagePlannerSwitch>( "planner_switch", 100U );
+        x_publisher_planner_switch =    x_node_handle.advertise<zeabus_utility::MessagePlannerSwitch>( "/planner_switch", 100U );
 
         // register service server to ROS
         x_service_server_get_depth =        x_node_handle.advertiseService( "/sensor/pressure", b_service_get_depth );
