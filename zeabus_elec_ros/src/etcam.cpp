@@ -19,6 +19,7 @@
 #include "zeabus_elec_ros/MessageNodeStatus.h"
 #include "zeabus_elec_ros/MessageHardwareError.h"
 #include "zeabus_elec_ros/MessageAction.h"
+#include "zeabus_elec_ros/MessageRawTelemetryValue.h"
 #include "zeabus_elec_ros/MessageTelemetryValue.h"
 #include "libetcam.hpp"
 #include "logger.hpp"
@@ -35,9 +36,10 @@ static ros::Publisher x_publisher_node_status_log;
 static ros::Publisher x_publisher_hardware_error_log;
 static ros::Publisher x_publisher_action_log;
 
+static ros::Publisher x_publisher_raw_telemetry_value;
+static ros::Publisher x_publisher_telemetry_value;
 static ros::ServiceServer x_service_server_set_thruster_throttle;
 static ros::ServiceServer x_service_server_get_telemetry;
-static ros::Publisher x_publisher_telemetry_value;
 
 static zeabus_utility::ServiceGetTelemetry::Response x_telemetry_state;
 
@@ -69,20 +71,20 @@ static void v_get_telemetry_value( void )
         throw( ki_ERROR_UNABLE_TO_RECEIVE_ETCAM_TELEMETRY );
     }
 
-    // publish telemetry value log
+    // publish raw telemetry value log
     {
-        boost::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> au_boost_telemetry;
-        zeabus_elec_ros::MessageTelemetryValue x_message_telemetry_value;
+        boost::array<uint8_t, libetcam::ku_TELEMETRY_SIZE> au_boost_raw_telemetry;
+        zeabus_elec_ros::MessageRawTelemetryValue x_message_raw_telemetry_value;
 
         // parse std::vector to boost::array
-        std::copy( x_telemetry.begin(), x_telemetry.end(), au_boost_telemetry.begin() );
+        std::copy( x_telemetry.begin(), x_telemetry.end(), au_boost_raw_telemetry.begin() );
 
-        // prepare telemetry value log
-        x_message_telemetry_value.header.stamp = x_telemetry_state.header.stamp;
-        x_message_telemetry_value.au_telemetry_value = au_boost_telemetry;
+        // prepare raw telemetry value log
+        x_message_raw_telemetry_value.header.stamp =            x_telemetry_state.header.stamp;
+        x_message_raw_telemetry_value.au_raw_telemetry_value =  au_boost_raw_telemetry;
 
-        // publish telemetry value log
-        x_publisher_telemetry_value.publish( x_message_telemetry_value );
+        // publish raw telemetry value log
+        x_publisher_raw_telemetry_value.publish( x_message_raw_telemetry_value );
     }
 
     // parse telemetry and save telemetry state
@@ -97,18 +99,33 @@ static void v_get_telemetry_value( void )
         ax_parsed_telemetry = libetcam::ax_telemetry_parser( au_telemetry );
 
         // parse std::array to boost::array
-        boost::array<zeabus_utility::StructTelemetry, libetcam::ku_THRUSTER_NUMBER> boost_parsed_telemetry;
+        boost::array<zeabus_utility::StructTelemetry, libetcam::ku_THRUSTER_NUMBER> ax_boost_parsed_telemetry;
         for( int i = 0U ; i < libetcam::ku_THRUSTER_NUMBER ; i++ )
         {
-            boost_parsed_telemetry[i].temperature =         ax_parsed_telemetry[i].u_temperature;
-            boost_parsed_telemetry[i].voltage =             ax_parsed_telemetry[i].f_voltage;
-            boost_parsed_telemetry[i].current =             ax_parsed_telemetry[i].f_current;
-            boost_parsed_telemetry[i].power_consumption =   ax_parsed_telemetry[i].us_power_consumption;
-            boost_parsed_telemetry[i].erpm =                ax_parsed_telemetry[i].us_erpm;
+            ax_boost_parsed_telemetry[i].temperature =         ax_parsed_telemetry[i].u_temperature;
+            ax_boost_parsed_telemetry[i].voltage =             ax_parsed_telemetry[i].f_voltage;
+            ax_boost_parsed_telemetry[i].current =             ax_parsed_telemetry[i].f_current;
+            ax_boost_parsed_telemetry[i].power_consumption =   ax_parsed_telemetry[i].us_power_consumption;
+            ax_boost_parsed_telemetry[i].erpm =                ax_parsed_telemetry[i].us_erpm;
         }
 
         // write telemetry to telemetry_state
-        x_telemetry_state.telemetry = boost_parsed_telemetry;
+        x_telemetry_state.telemetry = ax_boost_parsed_telemetry;
+
+        // publish telemetry value log
+        {
+            zeabus_elec_ros::MessageTelemetryValue x_message_telemetry_value;
+
+            // copy telemetry value sample time to the message
+            x_message_telemetry_value.header.stamp = x_telemetry_state.header.stamp;
+            
+            // copy the telemetry value to the message 
+            x_message_telemetry_value.ax_telemetry_value = ax_boost_parsed_telemetry;
+
+            // publish telemetry value log
+            x_publisher_telemetry_value.publish( x_message_telemetry_value );
+        }
+
     }
 
     return;
@@ -264,8 +281,9 @@ int main( int argc, char **argv )
         px_dev_etcam->set_option_port( boost::asio::serial_port_base::stop_bits( boost::asio::serial_port_base::stop_bits::one ) );
 
 
-        // register publisher to ROS
-        x_publisher_telemetry_value = x_node_handle.advertise<zeabus_elec_ros::MessageTelemetryValue>( "telemetry_value", 100U );
+        // register value log publisher to ROS
+        x_publisher_raw_telemetry_value =   x_node_handle.advertise<zeabus_elec_ros::MessageRawTelemetryValue>( "raw_telemetry_value", 100U );
+        x_publisher_telemetry_value =       x_node_handle.advertise<zeabus_elec_ros::MessageTelemetryValue>( "telemetry_value", 100U );
 
         // register service server to ROS
         x_service_server_set_thruster_throttle =    x_node_handle.advertiseService( "/hardware/thruster_throttle", b_set_thruster_throttle );

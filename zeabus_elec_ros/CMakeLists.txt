@@ -27,6 +27,7 @@ add_message_files(
     MessageAction.msg
     MessageBarometerValue.msg
     MessageIOPinState.msg
+    MessageRawTelemetryValue.msg
     MessageTelemetryValue.msg
 )
 
