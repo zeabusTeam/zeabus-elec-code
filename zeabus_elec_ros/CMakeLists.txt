@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     std_msgs
     zeabus_utility
-    zeabus_library_cpp
+    zeabus_library
 )
 
 ## System dependencies are found with CMake's conventions
@@ -131,6 +131,6 @@ target_link_libraries( peripheral_bridge_node
 
 target_link_libraries( etcam_node
   ${catkin_LIBRARIES}
-  ${zeabus_library_cpp_LIBRARIES}
+  ${zeabus_library_LIBRARIES}
   etcam
 )
